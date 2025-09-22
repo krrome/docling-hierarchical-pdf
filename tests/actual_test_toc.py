@@ -1,7 +1,12 @@
+from pathlib import Path
+
 import numpy as np
 import pytest
 from docling_core.types.doc.page import TextDirection
-from test_simple_clustDp2 import DocumentHierarchyBuilder, cleanup_non_headings, create_toc
+
+from hierarchical.hierarchy_builder import DocumentHierarchyBuilder, cleanup_non_headings, create_toc
+
+results_path = Path(__file__).parent / "results"
 
 sample_0 = [
     {
@@ -897,107 +902,6 @@ sample_0 = [
     },
 ]
 
-sample_0_res = """  Richtlinie 10-00
-  Einfuhrzollveranlagungsverfahren
-  Abkürzungsverzeichnis
-  1  Veranlagungsschritte im Zollveranlagungsverfahren
-    Ablaufschema Zollveranlagungsverfahren:
-    1.1  Zuführen
-    1.2  Zollüberwachung und Zollprüfung
-    1.3  Gestellen und summarisches Anmelden
-      1.3.1  Allgemeines
-      1.3.2  Form der summarischen Anmeldung
-      1.3.3  Manipulationen
-      1.3.4  Präzisierungen zum Ende des Gewahrsams des BAZG
-      1.3.5  Abstellen auf dem Amtsplatz
-    1.4  Anmelden
-      1.4.1  Allgemeines
-      1.4.2  Form der Einfuhrzollanmeldung (EZA)
-      1.4.3  Vereinfachte Zollanmeldung für abgabenfreie Sendungen
-      1.4.4  Bedeutung der zolltarifarischen Einreihung
-      1.4.5  Veranlagungstext
-      1.4.6  Antrag auf Zollermässigung oder Zollbefreiung
-      1.4.7  Zollbemessung
-      1.4.8  Kollektive Zollanmeldung
-      1.4.9  Begleitdokumente
-    1.5  Summarische Prüfung
-    1.6  Annahme der EZA
-      1.6.1  Selektion e-dec Import
-      1.6.2  Selektion e-dec-web Import
-    1.7  Formelle Überprüfung der angenommenen EZA
-      1.7.1  Allgemeines
-      1.7.2  Prüfung von Ursprungsnachweisen
-      1.7.3  Unstimmigkeiten bei der formellen Überprüfung der EZA
-      1.7.4  Erneute Vorlage einer beanstandeten EZA
-    1.8  Beschau
-      1.8.1  Allgemeines
-      1.8.2  Zweck der Beschau
-      1.8.3  Vorgehen bei der Beschau
-      1.8.4  Protokollierung von Schäden
-      1.8.5  Unstimmigkeiten bei der Beschau
-      1.8.6  Beschau am Domizil
-      1.8.7  Kontrolle des Bruttogewichts
-      1.8.8  Kontrolle der Eigenmasse
-      1.8.9  Musterentnahme
-      1.8.10  Zollbefund
-    1.9  Ausstellen und eröffnen der Veranlagungsverfügung
-      1.9.1  Allgemeines
-      1.9.2  Zweck
-      1.9.3  Ausstellen der Veranlagungsverfügung
-        1.9.3.1  Barzahlung
-        1.9.3.2  Zahlung im Rahmen des zentralisierten Abrechnungsverfahrens des BAZG  (ZAZ)
-          Elektronische Veranlagungsverfügung (eVV):
-        1.9.3.3  Hinweis auf Rechtsmittel in e-dec
-      1.9.4  Ausstellen von Duplikaten
-        1.9.4.1  Allgemein
-          Barzahlung:
-          Zahlung im Rahmen des zentralisierten Abrechnungsverfahrens des BAZG (ZAZ):
-        1.9.4.2  Ausfuhrerstattung in der EU; Duplikate VVZ und VVM
-          Sonderfälle:
-    1.10  Freigabe und Abtransport von Waren
-      1.10.1  Allgemeines
-      1.10.2  Vorzeitiger Abtransport von Waren
-      1.10.3  Unveranlagte Auslieferung
-        Verlagerungsverfahren MWST bei der Einfuhr
-        Kontingentswaren
-        Erläuterungen zu den Phasen
-  2  Besonderheiten
-    2.1  Vernichtung von Waren
-    2.2  Haftung des Bundes
-  3  Zeiten und Fristen
-    3.1  Übersicht
-    3.2  Frist zur Zollanmeldung
-      3.2.1  Zollanmeldung bei Gestellung
-        (Art. 4 ZV-BAZG)
-      3.2.2  Voranmeldung
-        Beglaubigung von Ursprungsnachweisen bei Grenzübertritt
-    3.3  Frist zur Vorlage der Zollanmeldung
-    3.4  Frist zum Abtransport von Waren
-  4  Pflichten und Rechte der anmeldepflichtigen Person
-    4.1  Übersicht
-    4.2  Rechte vor Abgabe der Zollanmeldung
-    4.3  Schriftliche Zolltarifauskunft
-      4.3.1  Allgemeines
-      4.3.2  Zuständigkeit
-      4.3.3  Warensortimente
-      4.3.4  Tarifanfrage (Form 40.10)
-      4.3.5  E-Mail - Anfragen
-    4.4  Mündliche Zolltarifauskunft
-    4.5  Besichtigung
-    4.6  Mitwirkung bei der Beschau
-  5  Archivierung von Daten und Dokumenten
-    5.1  Aufbewahrung durch die anmeldepflichtige Person
-    5.2  Aufbewahrung durch das BAZG
-  6  Rechtsgrundlagen
-  7  Begriffe
-    7.1  Anmeldepflichtige Personen
-    7.2  Veranlagungsbehörde
-    7.3  Veranlagungsobjekt
-    7.4  Veranlagungspartei
-    7.5  Zollveranlagung
-    7.6  Zuführungspflichtige Personen
-"""
-
 sample_1 = [
     {
         "font": "/Arial",
@@ -1338,45 +1242,6 @@ sample_1 = [
     },
 ]
 
-sample_1_res = """  Pflichtenheft  für  Lohnbrennerinnen  und  - brenner, die alco-dec verwenden
-  Abkürzungsverzeichnis
-  Inhaltsverzeichnis
-  0  Anpassungen
-  1  Allgemeines
-    Rechtliche Grundlagen
-    Brennereieinrichtungen und Lokalitäten
-    Standort und Standortwechsel
-    Meldepflicht für das fahrbare Brennen
-    Erwerb, Verkauf, Aufstellung, Änderungen
-    Anderweitige Verwendung der Brennapparate
-    Brennereipersonal
-    Nutzung von alco-dec
-  2  Rohstoffe
-  3  Herstellung Spirituosen
-    Kontrolle der persönlichen Daten der Produzentinnen und Produzenten
-    Entgegennahme der Rohstoffe
-    3.2.1  Unverzügliche  Erstellung  eines  Brennbewilligungsgesuchs  in  alco-dec  (Variante 1):
-    3.2.2  Entgegennahme via Rohstoff-Empfangsschein mit anschliessender Erfassung  in alco-dec (Variante 2)
-      Angaben auf den Behältern mit den Rohstoffen
-      Brennbewilligung
-      Spezialfall fahrbare Brennapparate
-  4  Besteuerung
-    Bestimmung des Alkoholgehalts
-    Bestimmung der hergestellten Spirituosenmenge
-    Meldung der hergestellten Spirituosen für Kleinproduzentinnen und Kleinprodu- zenten sowie Landwirtinnen und Landwirte
-    Meldung der hergestellten Spirituosen für Gewerbeproduzentinnen und Gewer- beproduzenten, einschliesslich der Landwirtinnen und Landwirte, die der ge- werblichen Kontrolle unterstellt sind
-    4.4.1  Meldung
-    4.4.2  Sperrfrist
-      Meldung der hergestellten Spirituosen bei Zusatz von Alkohol in den Rohstoffen  oder bei Umbrand
-      Aufbewahrung der Belege
-  5  Lagerung und Aushändigung der hergestellten Spirituosen
-    Identifizierung der Behälter
-    Aushändigung der hergestellten Spirituosen
-  6  Spirituosenhandel und Werbung für Spirituosen
-  7  Ausschank von Spirituosen
-  8  Aufhebung und Inkrafttreten
-"""
-
 
 sample_2 = [
     {
@@ -1461,17 +1326,6 @@ sample_2 = [
         "top_left": 40.265000000000000,
     },
 ]
-
-sample_2_res = """  Some text 1
-    Abkürzungsverzeichnis
-    Inhaltsverzeichnis
-    Introduction
-      Context
-        Sub-Context
-      Where the field is moving
-        Exceptions
-    Methods
-"""
 
 sample_3 = [
     {
@@ -1611,20 +1465,6 @@ sample_3 = [
     },
 ]
 
-sample_3_res = """  LEVERAGING MONOLINGUAL DATA FOR CROSSLINGUAL COMPOSITIONAL WORD REPRESENTATIONS
-  1 Introduction
-  2.2 CREATING REPRESENTATIONS FOR PHRUSESS AND DOCUMENTS
-  2.3 OBJECTIVE
-  3.1 CROSSINGUAL DOCUMENT CLASSIFICATION
-  3.2 INDUCE CROSSLINGUAL WORD REPRESENTATIONS
-  4 RESULTS
-    4.1 CROSSINGUAL DOCUMENT CLASSIFICATION
-    4.2 INTERESTING PROPERTIES OF THE INDUCED CROSSLINGUAL WORLD REPRESENTATIONS
-  5 CONCLUSION AND FUTURE WORK
-    ACKNOWLEDGEMENTS
-    REFERENCES
-"""
-
 sample_4 = [
     {
         "font": "",
@@ -1709,17 +1549,6 @@ sample_4 = [
     },
 ]
 
-sample_4_res = """  Abstract
-  1 Introduction
-    1.2 Approximation of the halfspace depth
-    1.3 Proposal
-  2 Theory
-    Algorithms
-  3.1 Combinatorial algorithm, k = d - 1
-  5 Conclusions
-    A Proof of Lemma 1
-"""
-
 sample_5 = [
     {
         "font": "",
@@ -1759,12 +1588,6 @@ sample_5 = [
     },
 ]
 
-
-sample_5_res = """  A Fast Randomized Method to Find Homotopy Classes for Socially-Aware Navigation
-  Luigi Palmieri
-  II. Our APPROACH
-  IV. RESULTS AND DISCUSSION
-"""
 
 sample_6 = [
     {
@@ -1886,22 +1709,6 @@ sample_6 = [
     },
 ]
 
-
-sample_6_res = """  1 Motivation
-  2 Results
-  3 Introduction
-  4 Methods
-    4.1 Choosing a set of Databases
-    4.2 Data extraction and visualisation
-  5 Results
-    5.1 Reuse within Databases
-    5.2 Patterns of Reuse within databases
-    5.3 Reuse between Databases
-    5.4 Patterns between databases
-  6 Discussion
-    References
-"""
-
 sample_7 = [
     {
         "font": "",
@@ -1976,17 +1783,6 @@ sample_7 = [
         "top_left": 55.528,
     },
 ]
-
-
-sample_7_res = """  MULTISCALE SURROGATE MODELING AND UNCERTAINTY QUANTIFICATION FOR PERIODIC COMPOSITE STRUCTURES
-  Charles Mylonas'l,Bemetz Valentin, Eleni Chatzi
-  1 Introduction
-  2 Computational Methodology
-    2.1 Asymptotic Expansion Homogenization
-  3.1 Dimensionality reduction with PCA for the homogenized stiffness tensor
-  3.3 Conclusion
-    REFERENCES
-"""
 
 sample_8 = [
     {
@@ -2117,21 +1913,13 @@ sample_8 = [
     },
 ]
 
-sample_8_res = """  Spectral Calibration of the Fluorescence Telescopes of the Pierre Auger Observatory
-  Abstract
-  1. Introduction
-  2. Optical Components of the Fluorescence Telescopes
-  3. Monochromator Drum Setup
-  4. Lab Measurements and the Drum Spectrum
-    4.1. Drum Emission
-    4.3. Uncertainties in Lab Measurements
-  5.2. Photodiode Monitor Data
-  6. Calculation of the FD Efficiency
-  7. Comparison of telescopes with differing optical components
-  8. Effect on Physics Measurabless
-  9. Conclusions
-    References
-"""
+
+def compare(res_text, i):
+    p = results_path / f"sample_{i}.txt"
+    if p.exists():
+        assert res_text == p.read_text()
+    else:
+        p.write_text(res_text)
 
 
 def test_sample_0():
@@ -2139,8 +1927,8 @@ def test_sample_0():
 
     builder = DocumentHierarchyBuilder(headings, max_levels=7)
 
-    root_node = builder.infer_by_numbering()
-    assert str(root_node) == sample_0_res
+    root_node = builder._infer_from_numbering()
+    compare(str(root_node), 0)
 
 
 def test_sample_1():
@@ -2148,41 +1936,41 @@ def test_sample_1():
 
     builder = DocumentHierarchyBuilder(headings, max_levels=7)
 
-    root_node = builder.infer_by_numbering()
-    assert str(root_node) == sample_1_res
+    root_node = builder._infer_from_numbering()
+    compare(str(root_node), 1)
 
 
 def test_sample_2():
     root_node = create_toc(sample_2)
-    assert str(root_node) == sample_2_res
+    compare(str(root_node), 2)
 
 
 def test_sample_3():
     root_node = create_toc(sample_3)
-    assert str(root_node) == sample_3_res
+    compare(str(root_node), 3)
 
 
 def test_sample_4():
     root_node = create_toc(sample_4)
-    assert str(root_node) == sample_4_res
+    compare(str(root_node), 4)
 
 
 @pytest.mark.skip(reason="inferring of titles currently ignored. Super edge case.")
 def test_sample_5():
     root_node = create_toc(sample_5)
-    assert str(root_node) == sample_5_res
+    compare(str(root_node), 5)
 
 
 def test_sample_6():
     root_node = create_toc(sample_6)
-    assert str(root_node) == sample_6_res
+    compare(str(root_node), 6)
 
 
 def test_sample_7():
     root_node = create_toc(sample_7)
-    assert str(root_node) == sample_7_res
+    compare(str(root_node), 7)
 
 
 def test_sample_8():
     root_node = create_toc(sample_8)
-    assert str(root_node) == sample_8_res
+    compare(str(root_node), 8)

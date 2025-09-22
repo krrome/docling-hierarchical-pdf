@@ -1,0 +1,4 @@
+  A Fast Randomized Method to Find Homotopy Classes for Socially-Aware Navigation
+  Luigi Palmieri
+  II. Our APPROACH
+  IV. RESULTS AND DISCUSSION

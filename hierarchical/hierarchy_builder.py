@@ -91,7 +91,7 @@ class DocumentHierarchyBuilder:
     def _infer_from_numbering(  # noqa: C901
         self, start_numbering_at_root=True, ignore_numbering_of_title=False
     ) -> HierarchicalHeader:
-        numbering_types = NumberingLevel.__members__
+        numbering_types = NumberingLevel.__members__.values()
 
         # If the title starts with an "I " or an "A " or something like that then this can upset the whole logic - catch that...
         features = self.features
@@ -105,6 +105,8 @@ class DocumentHierarchyBuilder:
                     features[title_indices[0]][k] = []
 
         # some sort of heuristic on whether numbered headings exist:
+        # import pdb
+        # pdb.set_trace()
         prop_numbered = len([f for f in features if any(len(f[k]) > 0 for k in numbering_types)]) / len(self.headings)
         if prop_numbered <= 0.3:
             return None
@@ -120,11 +122,12 @@ class DocumentHierarchyBuilder:
             new_parent = None
             kwargs = {}
             for k in numbering_types:
+                kval = k.value
                 if new_level := f[k]:
-                    kwargs = {k: new_level}
+                    kwargs = {k.value: new_level}
                     if first_number and start_numbering_at_root:
                         new_parent = root
-                    elif current_level := getattr(current, k):
+                    elif current_level := getattr(current, kval):
                         if self._gt_hierarchical(current_level, new_level):
                             if len(new_level) > len(current_level):
                                 if current_level == new_level[: len(current_level)]:
@@ -134,18 +137,18 @@ class DocumentHierarchyBuilder:
                                     new_parent = current
                                     while (
                                         new_parent.parent is not None
-                                        and hasattr(new_parent, k)
-                                        and (getattr(new_parent, k) != new_level[: len(getattr(new_parent, k))])
+                                        and hasattr(new_parent, kval)
+                                        and (getattr(new_parent, kval) != new_level[: len(getattr(new_parent, kval))])
                                     ):
                                         new_parent = new_parent.parent
                                     break
                             else:
                                 new_parent = current
                                 while new_parent.parent is not None and (
-                                    len(getattr(new_parent, k)) >= len(new_level)
+                                    len(getattr(new_parent, kval)) >= len(new_level)
                                     or (
-                                        hasattr(new_parent, k)
-                                        and (getattr(new_parent, k) != new_level[: len(getattr(new_parent, k))])
+                                        hasattr(new_parent, kval)
+                                        and (getattr(new_parent, kval) != new_level[: len(getattr(new_parent, kval))])
                                     )
                                 ):
                                     new_parent = new_parent.parent
@@ -174,8 +177,10 @@ class DocumentHierarchyBuilder:
                                         new_parent = last_level_obj
                                         while (
                                             new_parent.parent is not None
-                                            and hasattr(new_parent, k)
-                                            and (getattr(new_parent, k) != new_level[: len(getattr(new_parent, k))])
+                                            and hasattr(new_parent, kval)
+                                            and (
+                                                getattr(new_parent, kval) != new_level[: len(getattr(new_parent, kval))]
+                                            )
                                         ):
                                             new_parent = new_parent.parent
                                         break
@@ -258,7 +263,7 @@ class DocumentHierarchyBuilder:
     def _cluster_headings_dbscan(self) -> dict[int, int]:
         style_features = self.style_features
 
-        style_features = np.array([[el[k] for k in ["font_size"]] for el in style_features])
+        style_features = np.array([[el[k] for k in [StyleAttributes.font_size]] for el in style_features])
 
         scaler = StandardScaler()
         features_scaled = scaler.fit_transform(style_features)

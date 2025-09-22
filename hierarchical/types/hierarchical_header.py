@@ -5,7 +5,7 @@ from hierarchical.enums import NumberingLevel
 
 class UnkownNumberingLevel:
     def __init__(self, level_name):
-        super().__init__(f"Level kind must be one of {NumberingLevel.__members__}, not '{level_name}'.")
+        super().__init__(f"Level kind must be one of {NumberingLevel.__members__.values()}, not '{level_name}'.")
 
 
 @dataclass
@@ -25,10 +25,10 @@ class HierarchicalHeader:
         return self.level_alpha or self.level_alpha or self.level_numerical
 
     def last_level_of_kind(self, kind):
-        if kind not in NumberingLevel.__members__:
+        if kind not in NumberingLevel.__members__.values():
             raise UnkownNumberingLevel(kind)
         if self.parent:
-            if last := getattr(self.parent, kind):
+            if last := getattr(self.parent, kind.value):
                 return last, self.parent
             return self.parent.last_level_of_kind(kind)
         return [], None

@@ -1,6 +1,12 @@
 import re
 
-def infer_header_level_numerical( header_text: str) -> int:
+
+class InvalidLetterException(Exception):
+    def __init__(self, letter):
+        super().__init__(f"Invalid letter: {letter}")
+
+
+def infer_header_level_numerical(header_text: str) -> int:
     # Match dot-, space-, or minus-separated numbers at the start
     match = re.match(r"^((?:\d+[.\s-])+)\d+", header_text.strip())
     if match:
@@ -21,8 +27,9 @@ def letter_to_number(letter: str) -> int:
     """Convert a single letter (A-Z or a-z) to its corresponding number (A/a=1, B/b=2, ...)."""
     letter = letter.strip()
     if len(letter) != 1 or not letter.isalpha():
-        raise ValueError(f"Invalid letter: {letter}")
-    return ord(letter.lower()) - ord('a') + 1
+        raise InvalidLetterException(letter)
+    return ord(letter.lower()) - ord("a") + 1
+
 
 def infer_header_level_letter(header_text: str):
     """
@@ -35,25 +42,33 @@ def infer_header_level_letter(header_text: str):
     if match:
         letter = match.group(1)
         return [letter_to_number(letter)]
-    
-    return []
 
+    return []
 
 
 # Roman numeral conversion helper
 def roman_to_int(roman: str) -> int:
     roman = roman.upper()
     roman_map = {
-        'M': 1000, 'CM': 900, 'D': 500, 'CD': 400,
-        'C': 100, 'XC': 90, 'L': 50, 'XL': 40,
-        'X': 10, 'IX': 9, 'V': 5, 'IV': 4,
-        'I': 1
+        "M": 1000,
+        "CM": 900,
+        "D": 500,
+        "CD": 400,
+        "C": 100,
+        "XC": 90,
+        "L": 50,
+        "XL": 40,
+        "X": 10,
+        "IX": 9,
+        "V": 5,
+        "IV": 4,
+        "I": 1,
     }
     i, result = 0, 0
     while i < len(roman):
         # Check 2-letter symbols first (like 'CM', 'IX', etc.)
-        if i + 1 < len(roman) and roman[i:i+2] in roman_map:
-            result += roman_map[roman[i:i+2]]
+        if i + 1 < len(roman) and roman[i : i + 2] in roman_map:
+            result += roman_map[roman[i : i + 2]]
             i += 2
         else:
             result += roman_map[roman[i]]
@@ -65,7 +80,7 @@ def infer_header_level_roman(header_text: str):
     """
     Detects Roman numeral headers (at beginning of the string)
     and returns list of integer numbering levels.
-    
+
     Examples:
         "II. Methods" -> [2]
         "IV-2 Results" -> [4, 2]
@@ -73,15 +88,15 @@ def infer_header_level_roman(header_text: str):
         "XI.2.3 Subsection" -> [11, 2, 3]
     """
     text = header_text.strip()
-    
+
     # Match Roman numerals at start, optionally combined with dots/numbers
     match = re.match(r"^((?:[IVXLCDM]+[.\s-])+|[IVXLCDM]+$)", text, re.IGNORECASE)
-    
+
     if match:
         numbering = match.group(0)
         # Split into tokens by dot, dash, space
         tokens = [t for t in re.split(r"[.\s-]", numbering) if t]
-        
+
         groups = []
         for tok in tokens:
             if re.fullmatch(r"[IVXLCDM]+", tok, flags=re.IGNORECASE):
@@ -89,5 +104,5 @@ def infer_header_level_roman(header_text: str):
             elif tok.isdigit():
                 groups.append(int(tok))
         return groups
-    
+
     return []

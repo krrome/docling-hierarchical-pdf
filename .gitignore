@@ -7,6 +7,9 @@ __pycache__/
 *.py[codz]
 *$py.class
 
+# other local deno files
+local_demo/
+
 # C extensions
 *.so
 

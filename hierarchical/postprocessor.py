@@ -17,6 +17,10 @@ class ItemNotRegisteredAsChildException(Exception):
         super().__init__(f"The item {item} does not seem to be registered as a child of its parent node!")
 
 
+class ItemInconsitencyException(Exception):
+    pass
+
+
 def flatten_hierarchy_tree(node: HierarchicalHeader, parent_level: int = 0) -> list[tuple[HierarchicalHeader, int]]:
     children = []
     this_level = parent_level + 1
@@ -95,7 +99,7 @@ class ResultPostprocessor:
             return self._get_headers_document()
         return items
 
-    def process(self) -> None:
+    def process(self) -> None:  # noqa: C901
         headings = self.get_headers()
         root = create_toc(headings)
         doc = self.result.document
@@ -138,6 +142,8 @@ class ResultPostprocessor:
                 if item.self_ref in processed:
                     continue
                 if item.self_ref in by_ref:
+                    if not isinstance(item, SectionHeaderItem):
+                        raise ItemInconsitencyException()
                     current_header, level = by_ref[item.self_ref]
                     new_parent_ref = (
                         RefItem(cref=current_header.parent.doc_ref)
@@ -150,6 +156,8 @@ class ResultPostprocessor:
                         item.level = level + 1
                     # restructuring is needed
                     new_parent_ref = RefItem(cref=current_header.doc_ref)
+                if item.parent is None:
+                    raise ItemNotRegisteredAsChildException(item)
                 if new_parent_ref is not None and item.parent.cref == doc.body.self_ref:
                     old_parent = item.parent.resolve(doc)
                     new_parent = new_parent_ref.resolve(doc)

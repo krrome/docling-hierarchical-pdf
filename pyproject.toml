@@ -58,6 +58,7 @@ check_untyped_defs = true
 warn_return_any = true
 warn_unused_ignores = true
 show_error_codes = true
+plugins = ["pydantic.mypy"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -126,5 +127,5 @@ exclude = '''
 '''
 
 [[tool.mypy.overrides]]
-module = ["untyped_package.*"]
+module = ["sklearn.*"]
 follow_untyped_imports = true

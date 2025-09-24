@@ -260,10 +260,10 @@ class DocumentHierarchyBuilder:
     def _cluster_headings_dbscan(self) -> dict[int, int]:
         style_features = self.style_features
 
-        style_features = np.array([[el[StyleAttributes.font_size]] for el in style_features])
+        style_features_numpy = np.array([[el[StyleAttributes.font_size]] for el in style_features])
 
         scaler = StandardScaler()
-        features_scaled = scaler.fit_transform(style_features)
+        features_scaled = scaler.fit_transform(style_features_numpy)
 
         min_samples_grid = list(range(1, min(len(self.headings), 4)))
         eps_grid = np.arange(0.05, 0.21, 0.01)

@@ -1914,6 +1914,18 @@ sample_8 = [
     },
 ]
 
+sample_9 = [
+    {
+        "font": "",
+        "font_size": 33.26399999999998,
+        "is_bold": False,
+        "is_italic": False,
+        "text": "Spectral Calibration of the Fluorescence Telescopes of the Pierre Auger Observatory",
+        "text_direction:": None,
+        "top_left": 147.312,
+    },
+]
+
 
 def compare(res_text, i):
     p = results_path / f"sample_{i}.txt"
@@ -1975,6 +1987,11 @@ def test_sample_7():
 def test_sample_8():
     root_node = create_toc(sample_8)
     compare(str(root_node), 8)
+
+
+def test_sample_9():
+    root_node = create_toc(sample_9)
+    compare(str(root_node), 9)
 
 
 def test_flatten_hierarchy_tree():

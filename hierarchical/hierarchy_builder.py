@@ -260,6 +260,9 @@ class DocumentHierarchyBuilder:
     def _cluster_headings_dbscan(self) -> dict[int, int]:
         style_features = self.style_features
 
+        if len(self.headings) < 2:
+            return dict.fromkeys(range(len(self.headings)), 1)
+
         style_features_numpy = np.array([[el[StyleAttributes.font_size]] for el in style_features])
 
         scaler = StandardScaler()

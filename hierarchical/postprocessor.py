@@ -158,7 +158,7 @@ class ResultPostprocessor:
                     new_parent_ref = RefItem(cref=current_header.doc_ref)
                 if new_parent_ref is not None and item.parent is None:
                     raise ItemNotRegisteredAsChildException(item)
-                if new_parent_ref is not None and item.parent.cref == doc.body.self_ref:
+                if new_parent_ref is not None and item.parent is not None and item.parent.cref == doc.body.self_ref:
                     old_parent = item.parent.resolve(doc)
                     new_parent = new_parent_ref.resolve(doc)
                     item_i = [i for i, c in enumerate(old_parent.children) if c.cref == item.self_ref]

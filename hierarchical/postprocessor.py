@@ -156,7 +156,7 @@ class ResultPostprocessor:
                         item.level = level + 1
                     # restructuring is needed
                     new_parent_ref = RefItem(cref=current_header.doc_ref)
-                if item.parent is None:
+                if new_parent_ref is not None and item.parent is None:
                     raise ItemNotRegisteredAsChildException(item)
                 if new_parent_ref is not None and item.parent.cref == doc.body.self_ref:
                     old_parent = item.parent.resolve(doc)

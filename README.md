@@ -94,6 +94,22 @@ ResultPostprocessor(result).process()
 result.document.export_to_markdown()
 ```
 
+## Citation
+
+If you use this software for your project please cite Docling as well as the following:
+
+```
+@software{docling_hierarchical,
+  author = {Roman, Kayan},
+  doi = {10.5281/zenodo.1234},
+  month = {09},
+  title = {{docling-hierarchical-pdf}},
+  url = {https://github.com/krrome/docling-hierarchical-pdf},
+  version = {0.0.1},
+  year = {2025}
+}
+```
+
 ## Releasing a new version
 
 - Create an API Token on [PyPI](https://pypi.org/).

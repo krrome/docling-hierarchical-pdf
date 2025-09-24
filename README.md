@@ -109,15 +109,6 @@ If you use this software for your project please cite Docling as well as the fol
 }
 ```
 
-## Releasing a new version
-
-- Create an API Token on [PyPI](https://pypi.org/).
-- Add the API Token to your projects secrets with the name `PYPI_TOKEN` by visiting [this page](https://github.com/krrome/docling-hierarchical-pdf/settings/secrets/actions/new).
-- Create a [new release](https://github.com/krrome/docling-hierarchical-pdf/releases/new) on Github.
-- Create a new tag in the form `*.*.*`.
-
-For more details, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/cicd/#how-to-trigger-a-release).
-
 ---
 
 Repository initiated with [fpgmaas/cookiecutter-uv](https://github.com/fpgmaas/cookiecutter-uv).

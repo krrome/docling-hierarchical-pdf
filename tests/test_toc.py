@@ -1926,7 +1926,7 @@ def compare(res_text, i):
 def test_sample_0():
     headings = cleanup_non_headings(sample_0)
 
-    builder = DocumentHierarchyBuilder(headings, max_levels=7)
+    builder = DocumentHierarchyBuilder(headings)
 
     root_node = builder._infer_from_numbering()
     compare(str(root_node), 0)
@@ -1935,7 +1935,7 @@ def test_sample_0():
 def test_sample_1():
     headings = cleanup_non_headings(sample_1)
 
-    builder = DocumentHierarchyBuilder(headings, max_levels=7)
+    builder = DocumentHierarchyBuilder(headings)
 
     root_node = builder._infer_from_numbering()
     compare(str(root_node), 1)

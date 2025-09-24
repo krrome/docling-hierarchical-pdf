@@ -1,4 +1,6 @@
 from collections import Counter
+from enum import Enum
+from typing import Any, Optional, Union
 
 import numpy as np
 from sklearn.cluster import DBSCAN
@@ -11,32 +13,27 @@ from .types.hierarchical_header import HierarchicalHeader
 
 
 class InconsistentNumberingException(Exception):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             "Inconsistent numbering - either reading order is messed up or header numbering is not intended. Extract hierarchy from style only."
         )
 
 
 class ImplausibleHeadingStructureException(Exception):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("Hierarchy demands equal level heading, but no common parent was found!")
 
 
 class DocumentHierarchyBuilder:
-    def __init__(self, headings: list[dict], max_levels: int = 6):
-        self.max_levels = max_levels
-        self.level_assignments = {}
-        self.headings = headings
-        self._features = None
-        self._style_features = None
+    def __init__(self, headings: list[dict]):
+        self.headings: list[dict] = headings
+        self._features: Optional[list[dict[Enum, Any]]] = None
+        self._style_features: Optional[list[dict[StyleAttributes, float]]] = None
 
     @property
-    def features(self) -> np.ndarray:
+    def features(self) -> list[dict[Enum, Any]]:
         """
-        Extract features from heading properties for clustering.
-
-        Args:
-            headings: List of dicts with keys: 'text', 'font_size', 'is_bold', 'is_italic', 'position'
+        Extract features from heading properties for number-based hierarchy inference.
         """
         if self._features is None:
             features = []
@@ -48,8 +45,6 @@ class DocumentHierarchyBuilder:
                     NumberingLevel.level_latin: infer_header_level_roman(heading["text"]),
                     NumberingLevel.level_alpha: infer_header_level_letter(heading["text"]),
                     NumberingLevel.level_numerical: infer_header_level_numerical(heading["text"]),
-                    # Add position-based features
-                    # heading['position'] / len(headings),  # Relative position in document
                 }
                 features.append(feature_dict)
             self._features = features
@@ -57,12 +52,9 @@ class DocumentHierarchyBuilder:
         return self._features
 
     @property
-    def style_features(self) -> np.ndarray:
+    def style_features(self) -> list[dict[StyleAttributes, float]]:
         """
         Extract features from heading properties for clustering.
-
-        Args:
-            headings: List of dicts with keys: 'text', 'font_size', 'is_bold', 'is_italic', 'position'
         """
         if self._style_features is None:
             features = []
@@ -71,8 +63,6 @@ class DocumentHierarchyBuilder:
                     StyleAttributes.font_size: heading["font_size"],
                     StyleAttributes.bold: 1.0 if heading["is_bold"] else 0.0,
                     StyleAttributes.italic: 1.0 if heading["is_italic"] else 0.0,
-                    # Add position-based features
-                    # heading['position'] / len(headings),  # Relative position in document
                 }
                 features.append(feature_dict)
             self._style_features = features
@@ -80,7 +70,7 @@ class DocumentHierarchyBuilder:
         return self._style_features
 
     @staticmethod
-    def _gt_hierarchical(left, right):
+    def _gt_hierarchical(left: list[int], right: list[int]) -> bool:
         for i, j in zip(left, right):
             if i < j:
                 return True
@@ -89,8 +79,8 @@ class DocumentHierarchyBuilder:
         return len(right) > len(left)
 
     def _infer_from_numbering(  # noqa: C901
-        self, start_numbering_at_root=True, ignore_numbering_of_title=False
-    ) -> HierarchicalHeader:
+        self, start_numbering_at_root: bool = True, ignore_numbering_of_title: bool = False
+    ) -> Union[HierarchicalHeader, None]:
         numbering_types = NumberingLevel.__members__.values()
 
         # If the title starts with an "I " or an "A " or something like that then this can upset the whole logic - catch that...
@@ -218,7 +208,7 @@ class DocumentHierarchyBuilder:
         root = HierarchicalHeader()
         current = root
 
-        def gt_stylistic(level_fontsize: int, style_attrs: list[str], ref: HierarchicalHeader):
+        def gt_stylistic(level_fontsize: int, style_attrs: list[StyleAttributes], ref: HierarchicalHeader) -> bool:
             if ref.level_fontsize is None:
                 return True
             if level_fontsize > ref.level_fontsize:
@@ -227,7 +217,7 @@ class DocumentHierarchyBuilder:
                 return False
             return len(style_attrs) > len(ref.style_attrs)
 
-        def eq_stylistic(level_fontsize: int, style_attrs: list[str], ref: HierarchicalHeader):
+        def eq_stylistic(level_fontsize: int, style_attrs: list[StyleAttributes], ref: HierarchicalHeader) -> bool:
             if ref.level_fontsize is None:
                 return False
             return level_fontsize == ref.level_fontsize and len(style_attrs) == len(ref.style_attrs)
@@ -270,7 +260,7 @@ class DocumentHierarchyBuilder:
     def _cluster_headings_dbscan(self) -> dict[int, int]:
         style_features = self.style_features
 
-        style_features = np.array([[el[k] for k in [StyleAttributes.font_size]] for el in style_features])
+        style_features = np.array([[el[StyleAttributes.font_size]] for el in style_features])
 
         scaler = StandardScaler()
         features_scaled = scaler.fit_transform(style_features)
@@ -313,7 +303,6 @@ class DocumentHierarchyBuilder:
         for i, cluster_id in enumerate(cluster_labels):
             heading_to_level[i] = cluster_to_level[cluster_id]
 
-        self.level_assignments = heading_to_level
         return heading_to_level
 
     def infer(self) -> HierarchicalHeader:
@@ -328,7 +317,7 @@ class DocumentHierarchyBuilder:
         return root_node
 
 
-def cleanup_non_headings(headings):
+def cleanup_non_headings(headings: list[dict]) -> list[dict]:
     counter = Counter([el["text"] for el in headings])
     duplicate_headings = [k for k, count in counter.items() if count > 1]
     # if the location is always the same then it's either a header or a footer
@@ -343,7 +332,7 @@ def cleanup_non_headings(headings):
     return headings
 
 
-def create_toc(headings):
+def create_toc(headings: list[dict]) -> HierarchicalHeader:
     headings = cleanup_non_headings(headings)
-    builder = DocumentHierarchyBuilder(headings, max_levels=7)
+    builder = DocumentHierarchyBuilder(headings)
     return builder.infer()

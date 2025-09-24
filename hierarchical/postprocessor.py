@@ -1,17 +1,23 @@
 from functools import cached_property
 
 from docling.datamodel.document import ConversionResult
-from docling_core.types.doc.document import RefItem, SectionHeaderItem
+from docling_core.types.doc.document import NodeItem, RefItem, SectionHeaderItem
 
 from hierarchical.hierarchy_builder import create_toc
+from hierarchical.types.hierarchical_header import HierarchicalHeader
+
+
+class DoclingResultNotReadyException(Exception):
+    def __init__(self) -> None:
+        super().__init__("It seems that the docling result has not been filled / is not ready for postprocessing.")
 
 
 class ItemNotRegisteredAsChildException(Exception):
-    def __init__(self, item):
-        super().__init__("The item {item} does not seem to be registered as a child of its parent node!")
+    def __init__(self, item: NodeItem):
+        super().__init__(f"The item {item} does not seem to be registered as a child of its parent node!")
 
 
-def flatten_hierarchy_tree(node, parent_level=0):
+def flatten_hierarchy_tree(node: HierarchicalHeader, parent_level: int = 0) -> list[tuple[HierarchicalHeader, int]]:
     children = []
     this_level = parent_level + 1
     for c in node.children:
@@ -25,24 +31,28 @@ class ResultPostprocessor:
         self.result = result
 
     @cached_property
-    def has_hierarchy_levels(self):
+    def has_hierarchy_levels(self) -> bool:
         levels = set()
         for _, level in self.result.document.iterate_items():
             levels.add(level)
 
         return len(levels) > 1
 
-    def _get_headers_result(self):
-        items = []
+    def _get_headers_result(self) -> list[dict]:
+        items: list[dict] = []
         for item, _ in self.result.document.iterate_items():
             if not isinstance(item, SectionHeaderItem):
                 continue
             prov = item.prov[0]
             page = self.result.pages[prov.page_no - 1]
+            if page.predictions.layout is None:
+                return items
             for cluster in page.predictions.layout.clusters:
                 if not cluster or cluster.label != "section_header":
                     continue
                 first_cell = cluster.cells[0]
+                if page.size is None:
+                    raise DoclingResultNotReadyException()
                 if (
                     prov.bbox.intersection_area_with(
                         first_cell.rect.to_bounding_box().to_bottom_left_origin(page_height=page.size.height)
@@ -63,7 +73,7 @@ class ResultPostprocessor:
                     break
         return items
 
-    def _get_headers_document(self):
+    def _get_headers_document(self) -> list[dict]:
         items = []
         for item, _ in self.result.document.iterate_items():
             if isinstance(item, SectionHeaderItem):
@@ -80,12 +90,12 @@ class ResultPostprocessor:
                 })
         return items
 
-    def get_headers(self):
+    def get_headers(self) -> list[dict]:
         if not (items := self._get_headers_result()):
             return self._get_headers_document()
         return items
 
-    def process(self):
+    def process(self) -> None:
         headings = self.get_headers()
         root = create_toc(headings)
         doc = self.result.document
@@ -120,7 +130,7 @@ class ResultPostprocessor:
         #             new_parent.children.append(child_ref)
         #         else:
         #             raise Exception("No parent?!")
-        processed = []
+        processed: list[str] = []
         last_len_processed = -1
         while last_len_processed < len(processed):
             last_len_processed = len(processed)

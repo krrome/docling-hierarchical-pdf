@@ -124,3 +124,7 @@ source = ["hierarchical"]
 exclude = '''
 ^tests/results/
 '''
+
+[[tool.mypy.overrides]]
+module = ["untyped_package.*"]
+follow_untyped_imports = true

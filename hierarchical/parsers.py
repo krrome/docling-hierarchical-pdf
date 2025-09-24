@@ -2,11 +2,11 @@ import re
 
 
 class InvalidLetterException(Exception):
-    def __init__(self, letter):
+    def __init__(self, letter: str):
         super().__init__(f"Invalid letter: {letter}")
 
 
-def infer_header_level_numerical(header_text: str) -> int:
+def infer_header_level_numerical(header_text: str) -> list[int]:
     # Match dot-, space-, or minus-separated numbers at the start
     match = re.match(r"^((?:\d+[.\s-])+)\d+", header_text.strip())
     if match:
@@ -31,7 +31,7 @@ def letter_to_number(letter: str) -> int:
     return ord(letter.lower()) - ord("a") + 1
 
 
-def infer_header_level_letter(header_text: str):
+def infer_header_level_letter(header_text: str) -> list[int]:
     """
     Detects whether a header starts with a letter-numbered marker (A, B, C, ... or a, b, c, ...)
     and returns the numeric equivalent along with the raw match.
@@ -76,7 +76,7 @@ def roman_to_int(roman: str) -> int:
     return result
 
 
-def infer_header_level_roman(header_text: str):
+def infer_header_level_roman(header_text: str) -> list[int]:
     """
     Detects Roman numeral headers (at beginning of the string)
     and returns list of integer numbering levels.

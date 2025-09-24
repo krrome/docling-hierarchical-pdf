@@ -5,6 +5,7 @@ import pytest
 from docling_core.types.doc.page import TextDirection
 
 from hierarchical.hierarchy_builder import DocumentHierarchyBuilder, cleanup_non_headings, create_toc
+from hierarchical.postprocessor import flatten_hierarchy_tree
 
 results_path = Path(__file__).parent / "results"
 
@@ -1974,3 +1975,14 @@ def test_sample_7():
 def test_sample_8():
     root_node = create_toc(sample_8)
     compare(str(root_node), 8)
+
+
+def test_flatten_hierarchy_tree():
+    root_node = create_toc(sample_0)
+    current_non_num_level = 1
+    for h, level in flatten_hierarchy_tree(root_node):
+        if h.level_numerical:
+            assert level == len(h.level_numerical)
+            current_non_num_level = level + 1
+        else:
+            assert current_non_num_level == level

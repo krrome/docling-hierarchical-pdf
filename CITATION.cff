@@ -1,0 +1,12 @@
+cff-version: 1.2.0
+title: docling-hierarchical-pdf
+message: 'If you use docling-hierarchical-pdf for your project please cite Docling as well as the following'
+type: software
+authors:
+  - name: Roman Kayan
+identifiers:
+  - type: url
+    value: 'https://github.com/krrome/docling-hierarchical-pdf'
+    description: 'docling-hierarchical-pdf'
+repository-code: 'https://github.com/krrome/docling-hierarchical-pdf'
+license: MIT

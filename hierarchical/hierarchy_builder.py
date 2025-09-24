@@ -202,7 +202,13 @@ class DocumentHierarchyBuilder:
                     first_number = False
             if not new_parent:
                 new_parent = current if current.any_level() or current.parent is None else current.parent
-            new_obj = HierarchicalHeader(index=i, text=self.headings[i]["text"], parent=new_parent, **kwargs)
+            new_obj = HierarchicalHeader(
+                index=i,
+                text=self.headings[i]["text"],
+                parent=new_parent,
+                doc_ref=self.headings[i].get("reference"),
+                **kwargs,
+            )
             new_parent.children.append(new_obj)
             current = new_obj
         return root
@@ -254,6 +260,7 @@ class DocumentHierarchyBuilder:
                 parent=new_parent,
                 level_fontsize=this_fs_level,
                 style_attrs=this_style_attr,
+                doc_ref=self.headings[i].get("reference"),
             )
             new_parent.children.append(new_obj)
             current = new_obj

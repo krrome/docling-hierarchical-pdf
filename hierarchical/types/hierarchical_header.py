@@ -18,7 +18,7 @@ class HierarchicalHeader:
     level_numerical: list[int] = field(default_factory=lambda: [])
     parent: "HierarchicalHeader" = None
     children: list["HierarchicalHeader"] = field(default_factory=lambda: [])
-    doc_ref = None
+    doc_ref: str = None
     text: str = None
 
     def any_level(self):

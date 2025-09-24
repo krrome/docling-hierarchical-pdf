@@ -11,54 +11,88 @@ This package enables inference of header hierarchy in the docling PDF parsing pi
 - **Github repository**: <https://github.com/krrome/docling-hierarchical-pdf/>
 - **Documentation** <https://krrome.github.io/docling-hierarchical-pdf/>
 
-## Getting started with your project
+## What it does:
 
-### 1. Create a New Repository
+Docling currently does not support the extraction of header hierarchies from PDF documents. This package attempts to infer and correct the hierarchy of headings based on a few simple rules and then corrects the docling Document hierarchy accordingly.
 
-First, create a repository on GitHub with the same name as this project, and then run the following commands:
+### Inference
 
-```bash
-git init -b main
-git add .
-git commit -m "init commit"
-git remote add origin git@github.com:krrome/docling-hierarchical-pdf.git
-git push -u origin main
+The rules are:
+ - Numbering-based: Attempt to infer the hierarchy from heading numbering. Arabic and roman numbering as well as outline numbering using letters.
+ - Style-based: If the above fails try to infer the headings by font size and style (bold / italic).
+
+Results are as follows:
+
+Header hierarchy before reconstruction:
+
+```
+Richtlinie 10-00
+Einfuhrzollveranlagungsverfahren
+Abkürzungsverzeichnis
+1  Veranlagungsschritte im Zollveranlagungsverfahren
+Ablaufschema Zollveranlagungsverfahren:
+1.1  Zuführen
+1.2  Zollüberwachung und Zollprüfung
+1.3  Gestellen und summarisches Anmelden
+1.3.1  Allgemeines
+1.3.2  Form der summarischen Anmeldung
+1.3.3  Manipulationen
+...
 ```
 
-### 2. Set Up Your Development Environment
-
-Then, install the environment and the pre-commit hooks with
-
-```bash
-make install
+After reconstruction:
+```
+  Richtlinie 10-00
+  Einfuhrzollveranlagungsverfahren
+  Abkürzungsverzeichnis
+  1  Veranlagungsschritte im Zollveranlagungsverfahren
+    Ablaufschema Zollveranlagungsverfahren:
+    1.1  Zuführen
+    1.2  Zollüberwachung und Zollprüfung
+    1.3  Gestellen und summarisches Anmelden
+      1.3.1  Allgemeines
+      1.3.2  Form der summarischen Anmeldung
+      1.3.3  Manipulationen
+      ...
 ```
 
-This will also generate your `uv.lock` file
+### Applying the hierarchy
 
-### 3. Run the pre-commit hooks
+The current solution reorders the hierarchy tree of document items according to the inference results:
+ - Headings become sorted into parent/child relationship as inferred from the heading hierarchy.
+ - Heading get assigned with the inferred heading level (`level` attribute of `SectionHeaderItem`)
+ - Any Items (except for furniture) that follow a heading become children of that last heading.
 
-Initially, the CI/CD pipeline might be failing due to formatting issues. To resolve those run:
+### Verification
+The current solution has been tested on 60+ text-based PDF documents using the docling DocumentConverter with default parameters and gave satisfying results. In an attempt to test the performance with a public dataset 20+ document from the HDRDoc dataset have been tested. This dataset is based on images so the default VLM-pipeline of docling was used. Performance was inferior to pure-text PDFs, which was limited by the performance of docling VLM-parsing.
 
+### Limitations
+- The proposed solution uses the ConversionReult object rather than the DoclingDocument it produces, because DoclingDocument does not contain information on font style of text-based PDFs, which is present in the ConversionResult. The more information is available the is the inference result.
+- The solution entirely relies on docling parsing - if docling does not identify a header then there is no way to get it back with this postprocessing - but docling does pretty well for text-based PDFs.
+- The proposed solution currently does not take TOC-bookmarks into account, but I am planning to integrate that soon.
+- The proposed solution has not yet been evaluated on the full HRDoc dataset, but I am planning to do this soon.
+
+## How to use it:
+
+Install it:
 ```bash
-uv run pre-commit run -a
+pip install XXXX
 ```
 
-### 4. Commit the changes
+Use it:
+```python
+from docling.document_converter import DocumentConverter
+from hierarchical.postprocessor import ResultPostprocessor
 
-Lastly, commit the changes made by the two steps above to your repository.
+source = "my_file.pdf"  # document per local path or URL
+converter = DocumentConverter()
+result = converter.convert(source)
+# the postprocessor modifies the result.document in place.
+ResultPostprocessor(result).process()
 
-```bash
-git add .
-git commit -m 'Fix formatting issues'
-git push origin main
+# enjoy the reordered document
+result.document.export_to_markdown()
 ```
-
-You are now ready to start development on your project!
-The CI/CD pipeline will be triggered when you open a pull request, merge to main, or when you create a new release.
-
-To finalize the set-up for publishing to PyPI, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/publishing/#set-up-for-pypi).
-For activating the automatic documentation with MkDocs, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/mkdocs/#enabling-the-documentation-on-github).
-To enable the code coverage reports, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/codecov/).
 
 ## Releasing a new version
 

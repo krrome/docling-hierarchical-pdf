@@ -101,7 +101,6 @@ If you use this software for your project please cite Docling as well as the fol
 ```
 @software{docling_hierarchical,
   author = {Roman, Kayan},
-  doi = {10.5281/zenodo.1234},
   month = {09},
   title = {{docling-hierarchical-pdf}},
   url = {https://github.com/krrome/docling-hierarchical-pdf},

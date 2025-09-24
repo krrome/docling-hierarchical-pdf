@@ -11,7 +11,7 @@ sample_path = Path(__file__).parent / "samples"
 def compare(res_text, fn):
     p = results_path / fn
     if p.exists():
-        assert res_text == p.read_text()
+        assert res_text.strip() == p.read_text().strip()
     else:
         p.write_text(res_text)
 

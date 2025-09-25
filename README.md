@@ -76,7 +76,7 @@ The current solution has been tested on 60+ text-based PDF documents using the d
 
 Install it:
 ```bash
-pip install XXXX
+pip install docling-hierarchical-pdf
 ```
 
 Use it:

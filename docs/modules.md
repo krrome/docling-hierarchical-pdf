@@ -1,1 +1,1 @@
-::: hierarchical.foo
+::: hierarchical

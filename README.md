@@ -87,8 +87,35 @@ result = converter.convert(source)
 # the postprocessor modifies the result.document in place.
 ResultPostprocessor(result).process()
 
-# enjoy the reordered document
+# enjoy the reordered document - for example convert it to markdown
 result.document.export_to_markdown()
+
+# or use a chunker on it...
+```
+
+or for the VLM-pipeline:
+
+```python
+from docling.datamodel.base_models import InputFormat
+from docling.document_converter import DocumentConverter, PdfFormatOption
+from docling.pipeline.vlm_pipeline import VlmPipeline
+
+source = "my_scanned.pdf"  # document per local path or URL
+
+converter = DocumentConverter(
+    format_options={
+        InputFormat.PDF: PdfFormatOption(
+            pipeline_cls=VlmPipeline,
+        ),
+    }
+)
+result = converter.convert(source=source)
+ResultPostprocessor(result).process()
+
+# enjoy the reordered document - for example convert it to markdown
+result.document.export_to_markdown()
+
+# or use a chunker on it...
 ```
 
 ## Citation

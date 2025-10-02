@@ -29,12 +29,13 @@ result.document.export_to_markdown()
 # or use a chunker on it...
 ```
 
-or for the VLM-pipeline
+or for the VLM-pipeline:
 
 ```python
 from docling.datamodel.base_models import InputFormat
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.pipeline.vlm_pipeline import VlmPipeline
+from hierarchical.postprocessor import ResultPostprocessor
 
 source = "my_scanned.pdf"  # document per local path or URL
 

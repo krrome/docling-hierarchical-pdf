@@ -12,6 +12,7 @@ class UnkownNumberingLevel(Exception):
 @dataclass
 class HierarchicalHeader:
     index: Optional[int] = None
+    level_toc: Optional[int] = None
     level_fontsize: Optional[int] = None
     style_attrs: list[StyleAttributes] = field(default_factory=lambda: [])
     level_latin: list[int] = field(default_factory=lambda: [])

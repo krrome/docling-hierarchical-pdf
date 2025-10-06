@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from docling.document_converter import DocumentConverter
 
 from hierarchical.postprocessor import ResultPostprocessor
@@ -16,13 +17,13 @@ def compare(res_text, fn):
         p.write_text(res_text)
 
 
-def test_result_postprocessor_textpdf():
-    source = sample_path / "sample_document.pdf"  # document per local path or URL
+def test_result_postprocessor_textpdf_no_bookmarks():
+    source = sample_path / "sample_document_no_bookmarks.pdf"  # document per local path or URL
     converter = DocumentConverter()
     result = converter.convert(source)
     ResultPostprocessor(result).process()
 
-    compare(result.document.export_to_markdown(), "sample_document.md")
+    compare(result.document.export_to_markdown(), "sample_document_no_bookmarks.md")
 
     allowed_headers = [
         "Some kind of text document",
@@ -42,7 +43,73 @@ def test_result_postprocessor_textpdf():
         assert item.text in allowed_headers
 
 
+def test_result_postprocessor_textpdf():
+    source = sample_path / "sample_document.pdf"  # document per local path or URL
+    converter = DocumentConverter()
+    result = converter.convert(source)
+    ResultPostprocessor(result).process()
+
+    compare(result.document.export_to_markdown(), "sample_document.md")
+
+    allowed_headers_res = [item_ref.resolve(result.document).text for item_ref in result.document.body.children]
+    print(allowed_headers_res)
+
+    allowed_headers = [
+        "Some kind of text document",
+        "1. Introduction",
+        "1.1 Background",
+        "1.2 Purpose",
+        "2. Main Content",
+        "2.1 Section One",
+        "2.1.1 Subsection",
+        "2.1.2 Another Subsection",
+        "2.2 Section Two",
+        "3. Conclusion",
+    ]
+
+    for item_ref in result.document.body.children:
+        item = item_ref.resolve(result.document)
+        assert item.text in allowed_headers
+
+
+@pytest.mark.skip(
+    reason="just another example like test_result_postprocessor_textpdf. Not necessary for automated tests."
+)
+def test_result_postprocessor_textpdf_toc():
+    source = (
+        sample_path / "7261551c-3618-4641-81bb-08b101b3f5ad--Anmeldeformular%201%20ZLE%20Extern_d.pdf"
+    )  # document per local path or URL
+    converter = DocumentConverter()
+    result = converter.convert(source)
+    ResultPostprocessor(result).process()
+
+    compare(
+        result.document.export_to_markdown(),
+        "7261551c-3618-4641-81bb-08b101b3f5ad--Anmeldeformular%201%20ZLE%20Extern_d.md",
+    )
+
+
+@pytest.mark.skip(
+    reason="just another example like test_result_postprocessor_textpdf. Not necessary for automated tests."
+)
+def test_result_postprocessor_textpdf_toc_r10():
+    source = sample_path / "R-10-00.pdf"  # document per local path or URL
+    converter = DocumentConverter()
+    result = converter.convert(source)
+    ResultPostprocessor(result).process()
+
+    compare(
+        result.document.export_to_markdown(),
+        "R-10-00.md",
+    )
+
+
+# vlm tests take way too long for automatic testing
 # def test_result_postprocessor_vlmpdf():
+#     from docling.datamodel.base_models import InputFormat
+#     from docling.document_converter import DocumentConverter, PdfFormatOption
+#     from docling.pipeline.vlm_pipeline import VlmPipeline
+
 #     source = "/mnt/hgfs/virtual_machines/HRDH/HRDH/images/1401.3699/file_3pages.pdf"  # document per local path or URL
 
 #     converter = DocumentConverter(
@@ -55,9 +122,9 @@ def test_result_postprocessor_textpdf():
 #     result = converter.convert(source=source)
 #     ResultPostprocessor(result).process()
 
-
 #     result.document.body.children
 #     from pathlib import Path
+
 #     Path("1401.3699.output.md").write_text(result.document.export_to_markdown())
 
 #     for item_ref in result.document.body.children:

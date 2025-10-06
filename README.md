@@ -12,7 +12,11 @@ This package enables inference of header hierarchy in the docling PDF parsing pi
 
 Docling currently does not support the extraction of header hierarchies from PDF documents. This package attempts to infer and correct the hierarchy of headings based on a few simple rules and then corrects the docling Document hierarchy accordingly.
 
-### Inference
+### Import from bookmarks (PDF-metadata)
+
+This package uses pymupdf to try to extract the TOC from "PDF-bookmarks". If successful, the headings and texts in a Docling result are corrected to match the structure in the PDF metadata. This means that the code doesn't only correct the hierarchy levels of section headings that were correctly parsed by docling, but it also attempts a best effort solution converting headings missed by docling into headings and vice versa.
+
+### Stylistic inference
 
 The rules are:
  - Numbering-based: Attempt to infer the hierarchy from heading numbering. Arabic and roman numbering as well as outline numbering using letters.
@@ -53,7 +57,7 @@ After reconstruction:
       ...
 ```
 
-### Applying the hierarchy
+#### Applying the hierarchy
 
 The current solution reorders the hierarchy tree of document items according to the inference results:
  - Headings become sorted into parent/child relationship as inferred from the heading hierarchy.
@@ -66,8 +70,7 @@ The current solution has been tested on 60+ text-based PDF documents using the d
 ### Limitations
 - The proposed solution uses the ConversionReult object rather than the DoclingDocument it produces, because DoclingDocument does not contain information on font style of text-based PDFs, which is present in the ConversionResult. The more information is available the is the inference result.
 - The solution entirely relies on docling parsing - if docling does not identify a header then there is no way to get it back with this postprocessing - but docling does pretty well for text-based PDFs.
-- The proposed solution currently does not take TOC-bookmarks into account, but I am planning to integrate that soon.
-- The proposed solution has not yet been evaluated on the full HRDoc dataset, but I am planning to do this soon.
+- The proposed solution has not yet been evaluated on the full HRDoc dataset.
 
 ## How to use it:
 
@@ -99,6 +102,7 @@ or for the VLM-pipeline:
 from docling.datamodel.base_models import InputFormat
 from docling.document_converter import DocumentConverter, PdfFormatOption
 from docling.pipeline.vlm_pipeline import VlmPipeline
+from hierarchical.postprocessor import ResultPostprocessor
 
 source = "my_scanned.pdf"  # document per local path or URL
 

@@ -1,9 +1,19 @@
 from functools import cached_property
 
 from docling.datamodel.document import ConversionResult
-from docling_core.types.doc.document import NodeItem, RefItem, SectionHeaderItem
+from docling_core.types.doc.document import (
+    DocItem,
+    DocItemLabel,
+    DoclingDocument,
+    ListItem,
+    NodeItem,
+    RefItem,
+    SectionHeaderItem,
+    TextItem,
+)
 
 from hierarchical.hierarchy_builder import create_toc
+from hierarchical.hierarchy_builder_metadata import HierarchyBuilderMetadata
 from hierarchical.types.hierarchical_header import HierarchicalHeader
 
 
@@ -28,6 +38,13 @@ def flatten_hierarchy_tree(node: HierarchicalHeader, parent_level: int = 0) -> l
         children.append((c, this_level))
         children.extend(flatten_hierarchy_tree(c, this_level))
     return children
+
+
+def set_item_in_doc(doc: DoclingDocument, item: DocItem) -> None:
+    _, path, index_str = item.self_ref.split("/")
+    index = int(index_str)
+    doc.__getattribute__(path)[index] = item
+    item = item
 
 
 class ResultPostprocessor:
@@ -100,8 +117,14 @@ class ResultPostprocessor:
         return items
 
     def process(self) -> None:  # noqa: C901
-        headings = self.get_headers()
-        root = create_toc(headings)
+        hbm = HierarchyBuilderMetadata(self.result)
+        header_correction = False
+        if len(hbm.toc) > 0:
+            root = hbm.infer()
+            header_correction = True
+        else:
+            headings = self.get_headers()
+            root = create_toc(headings)
         doc = self.result.document
         # convert structure back to heading levels
         flat_hierarchy = flatten_hierarchy_tree(root, 0)
@@ -110,30 +133,7 @@ class ResultPostprocessor:
         # maybe it is enough to alter the parent, pop the element from the current parent's children and add them to the new parent's children?
         current_header = root
         new_parent_ref = None
-        # for item_ref in copy(doc.body.children):
-        #     item = item_ref.resolve(doc)
-        #     if hasattr(item, "text") and "Zollanmeldung für die abgabenfreie Einfuhr" in item.text:
-        #         import pdb
-        #         pdb.set_trace()
-        #     if item.self_ref in by_ref:
-        #         current_header, level = by_ref[item.self_ref]
-        #         new_parent_ref = RefItem(cref=current_header.parent.doc_ref) if current_header.parent is not None and current_header.parent.doc_ref is not None else None
-        #         item.level = level
-        #     elif current_header.doc_ref is not None:
-        #         if isinstance(item, SectionHeaderItem):
-        #             item.level = level + 1
-        #         # restructuring is needed
-        #         new_parent_ref = RefItem(cref=current_header.doc_ref)
-        #     if new_parent_ref is not None:
-        #         old_parent = item.parent.resolve(doc)
-        #         new_parent = new_parent_ref.resolve(doc)
-        #         item_i = [i for i, c in enumerate(old_parent.children) if c.cref == item.self_ref]
-        #         if item_i:
-        #             child_ref = old_parent.children.pop(item_i[0])
-        #             item.parent = new_parent_ref
-        #             new_parent.children.append(child_ref)
-        #         else:
-        #             raise Exception("No parent?!")
+
         processed: list[str] = []
         last_len_processed = -1
         while last_len_processed < len(processed):
@@ -141,9 +141,31 @@ class ResultPostprocessor:
             for item, _ in self.result.document.iterate_items(with_groups=True):
                 if item.self_ref in processed:
                     continue
+                if isinstance(item, SectionHeaderItem) and item.self_ref not in by_ref and header_correction:
+                    # convert SectionHeaderItem to TextItem
+                    text_item = TextItem(
+                        label=DocItemLabel.TEXT,
+                        **{k: v for k, v in item.model_dump().items() if k != "label" and k in TextItem.model_fields},
+                    )
+                    # now swap the reference to SectionHeaderItem with the one of text_item in the doc.
+                    set_item_in_doc(doc, text_item)
+                    item = text_item
                 if item.self_ref in by_ref:
                     if not isinstance(item, SectionHeaderItem):
-                        raise ItemInconsitencyException()
+                        if header_correction and isinstance(item, (TextItem, ListItem)):
+                            header_item = SectionHeaderItem(**{
+                                k: v
+                                for k, v in item.model_dump().items()
+                                if k != "label" and k in SectionHeaderItem.model_fields
+                            })
+                            # in case heading was numbered and the text was intepreted as a listitem
+                            if isinstance(item, ListItem):
+                                header_item.text = header_item.orig
+                            # now swap the reference to TextItem with the one of header_item in the doc.
+                            set_item_in_doc(doc, header_item)
+                            item = header_item
+                        else:
+                            raise ItemInconsitencyException()
                     current_header, level = by_ref[item.self_ref]
                     new_parent_ref = (
                         RefItem(cref=current_header.parent.doc_ref)
@@ -170,27 +192,3 @@ class ResultPostprocessor:
                         raise ItemNotRegisteredAsChildException(item)
                     break
                 processed.append(item.self_ref)
-
-        # for item, _ in self.result.document.iterate_items():
-        #     if not isinstance(item, SectionHeaderItem):
-        #         continue
-        #     if item.level == 1:
-        #         if item.self_ref in by_ref:
-        #     if hasattr(item, "text") and "Zollanmeldung für die abgabenfreie Einfuhr" in item.text:
-        #         import pdb
-        #         pdb.set_trace()
-        #         print(item)
-        #         print(type(item))
-
-        # import pdb
-        # pdb.set_trace()
-
-        # for item, _ in self.result.document.iterate_items():
-        #     if not isinstance(item, SectionHeaderItem):
-        #         continue
-        #     print(item.level, item)
-
-        # for item in modified_headers.values():
-        #     print(item.text, len(item.children), item.parent, item.level)
-        # len(doc.body.children)
-        # doc.body.children[0].resolve(doc)

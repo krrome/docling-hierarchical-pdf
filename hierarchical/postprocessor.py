@@ -40,7 +40,7 @@ def flatten_hierarchy_tree(node: HierarchicalHeader, parent_level: int = 0) -> l
     return children
 
 
-def set_item_in_doc(doc: DoclingDocument, item: DocItem):
+def set_item_in_doc(doc: DoclingDocument, item: DocItem) -> None:
     _, path, index_str = item.self_ref.split("/")
     index = int(index_str)
     doc.__getattribute__(path)[index] = item

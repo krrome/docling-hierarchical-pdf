@@ -128,5 +128,5 @@ exclude = '''
 '''
 
 [[tool.mypy.overrides]]
-module = ["sklearn.*"]
+module = ["sklearn.*", "pymupdf"]
 follow_untyped_imports = true

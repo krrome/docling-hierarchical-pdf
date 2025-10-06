@@ -2,9 +2,9 @@ import re
 from functools import cached_property
 from logging import Logger
 
-import fitz
 from docling.datamodel.document import ConversionResult
 from docling_core.types.doc import BoundingBox, ListItem, TextItem
+from pymupdf import Document as FitzDocument
 
 from .types.hierarchical_header import HierarchicalHeader
 
@@ -31,7 +31,7 @@ class HierarchyBuilderMetadata:
         return self._extract_toc()
 
     def _extract_toc(self) -> list[tuple]:  # noqa: C901
-        with fitz.open(self.conv_res.input.file) as doc:
+        with FitzDocument(self.conv_res.input.file) as doc:
             toc = doc.get_toc(
                 simple=False
             )  # gives a list of lists [<hierarchy level>, <Header name>, <pdf-page number>, <dict of additional information including position of the bookmark>]
@@ -60,7 +60,7 @@ class HierarchyBuilderMetadata:
                     if "coords" not in add_info:
                         title_ref = re.sub(r"[^A-Za-z0-9]", "", title)
                         actual_title = ""
-                        accum_blocks = []
+                        accum_blocks: list[tuple] = []
                         for block in doc[page_here - 1].get_textpage().extractBLOCKS():
                             potential_title = re.sub(r"[^A-Za-z0-9]", "", block[4])
                             if potential_title == title_ref and not accum_blocks:

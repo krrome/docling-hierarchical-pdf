@@ -1,5 +1,9 @@
 from functools import cached_property
+from io import BytesIO
+from pathlib import PurePath
+from typing import Optional, Union
 
+from docling.datamodel.base_models import DocumentStream
 from docling.datamodel.document import ConversionResult
 from docling_core.types.doc.document import (
     DocItem,
@@ -48,8 +52,15 @@ def set_item_in_doc(doc: DoclingDocument, item: DocItem) -> None:
 
 
 class ResultPostprocessor:
-    def __init__(self, result: ConversionResult):
+    def __init__(
+        self,
+        result: ConversionResult,
+        source: Optional[Union[PurePath, str, DocumentStream, BytesIO]] = None,
+        raise_on_error: bool = False,
+    ):
         self.result = result
+        self.source = source
+        self.raise_on_error = raise_on_error
 
     @cached_property
     def has_hierarchy_levels(self) -> bool:
@@ -117,7 +128,7 @@ class ResultPostprocessor:
         return items
 
     def process(self) -> None:  # noqa: C901
-        hbm = HierarchyBuilderMetadata(self.result)
+        hbm = HierarchyBuilderMetadata(self.result, self.source, self.raise_on_error)
         header_correction = False
         if len(hbm.toc) > 0:
             root = hbm.infer()

@@ -122,6 +122,31 @@ result.document.export_to_markdown()
 # or use a chunker on it...
 ```
 
+## FAQ
+
+### Working with DocumentStream sources / PDFFileNotFoundException:
+
+If you run into the `PDFFileNotFoundException` then your `source` attribute to `DocumentConverter().convert(source=source)` has either been of type `str` or of type `DocumentStream` so there is the Docling conversion result unfortunately does *not* hold a valid reference to the source file anymore. Hence the Postprocessor needs your help - if `source` was a string then you can add the `source=source` when instantiating `ResultPostprocessor` - full example:
+
+```python
+from docling.document_converter import DocumentConverter
+from hierarchical.postprocessor import ResultPostprocessor
+
+source = "my_file.pdf"  # document per local path or URL
+converter = DocumentConverter()
+result = converter.convert(source)
+# the postprocessor modifies the result.document in place.
+ResultPostprocessor(result, source=source).process()
+# ...
+```
+
+If you have used a `DocumentStream` object as source you are unfortunately in the situation that you will have to pass a valid Path to the PDF as a `source` argument to `ResultPostprocessor` or a new, open BytesIO stream or `DocumentStream` object as a `source` argument to `ResultPostprocessor`. The reason is that docling *closes* the source stream when it is finished - so no more reading from that stream is possible.
+
+### Exception handling for ToC extraction from metadata:
+
+You want to handle exceptions regarding File-IO / Streams yourself - great, just set `raise_on_error` to `True` when instantiating `ResultPostprocessor`.
+
+
 ## Citation
 
 If you use this software for your project please cite Docling as well as the following:

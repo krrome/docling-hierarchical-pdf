@@ -25,7 +25,7 @@ def test_convert():
     source = sample_path / "sample_document.pdf"  # document per local path or URL
     converter = DocumentConverter()
     result = converter.convert(source)
-    hbm = HierarchyBuilderMetadata(result, [])
+    hbm = HierarchyBuilderMetadata(result)
     root = hbm.infer()
     assert str(root) == ref_output
 
@@ -126,6 +126,6 @@ def test_convert_r10():
     source = sample_path / "R-10-00.pdf"  # document per local path or URL
     converter = DocumentConverter()
     result = converter.convert(source)
-    hbm = HierarchyBuilderMetadata(result, [])
+    hbm = HierarchyBuilderMetadata(result)
     root = hbm.infer()
     assert str(root) == ref_output

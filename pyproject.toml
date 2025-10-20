@@ -1,6 +1,6 @@
 [project]
 name = "docling-hierarchical-pdf"
-version = "0.1.1"
+version = "0.1.2"
 description = "This package enables inference of header hierarchy in the docling PDF parsing pipeline."
 authors = [{ name = "Roman Kayan", email = "rkreuzh@gmail.com" }]
 readme = "README.md"

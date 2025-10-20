@@ -309,6 +309,8 @@ class DocumentHierarchyBuilder:
         return heading_to_level
 
     def infer(self) -> HierarchicalHeader:
+        if len(self.headings) == 0:
+            return HierarchicalHeader()
         try:
             if (root_node := self._infer_from_numbering()) is not None:
                 return root_node

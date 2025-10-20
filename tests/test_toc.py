@@ -1994,6 +1994,12 @@ def test_sample_9():
     compare(str(root_node), 9)
 
 
+def test_skip_empty_header_list():
+    root_node = create_toc([])
+    assert root_node.parent is None
+    assert len(root_node.children) == 0
+
+
 def test_flatten_hierarchy_tree():
     root_node = create_toc(sample_0)
     current_non_num_level = 1

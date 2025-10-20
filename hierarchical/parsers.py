@@ -13,7 +13,10 @@ def infer_header_level_numerical(header_text: str) -> list[int]:
         # Count the number of numeric groups (split by dot or space)
         numbering = match.group(0)
         # Split by dot or space, filter out empty strings
-        groups = [int(g) for g in re.split(r"[.\s]", numbering) if g]
+        try:
+            groups = [int(g) for g in re.split(r"[.\s]", numbering) if g]
+        except ValueError:
+            return []
         return groups
     # Handle single number at the start (e.g., "2 Heading")
     match_single = re.match(r"^\d+", header_text.strip())
@@ -41,7 +44,10 @@ def infer_header_level_letter(header_text: str) -> list[int]:
     match = re.match(r"^([A-Za-z])(?:[.)\s-]+)", header_text)
     if match:
         letter = match.group(1)
-        return [letter_to_number(letter)]
+        try:
+            return [letter_to_number(letter)]
+        except InvalidLetterException:
+            return []
 
     return []
 
@@ -98,11 +104,15 @@ def infer_header_level_roman(header_text: str) -> list[int]:
         tokens = [t for t in re.split(r"[.\s-]", numbering) if t]
 
         groups = []
-        for tok in tokens:
-            if re.fullmatch(r"[IVXLCDM]+", tok, flags=re.IGNORECASE):
-                groups.append(roman_to_int(tok))
-            elif tok.isdigit():
-                groups.append(int(tok))
+        try:
+            for tok in tokens:
+                if re.fullmatch(r"[IVXLCDM]+", tok, flags=re.IGNORECASE):
+                    groups.append(roman_to_int(tok))
+                elif tok.isdigit():
+                    groups.append(int(tok))
+        except KeyError:
+            # KeyError from converting roman numbers to int.
+            pass
         return groups
 
     return []

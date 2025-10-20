@@ -2009,3 +2009,57 @@ def test_flatten_hierarchy_tree():
             current_non_num_level = level + 1
         else:
             assert current_non_num_level == level
+
+
+def test_catch_illformatted_arabic_numbering():
+    headings = [
+        {
+            "text": "APPENDIX 1 TO ANNEX I",
+            "font_size": np.float64(10.331999999999994),
+            "is_bold": False,
+            "is_italic": False,
+            "top_left": 111.356,
+            "text_direction:": TextDirection.LEFT_TO_RIGHT,
+            "font": "/Times New Roman",
+            "reference": "#/texts/0",
+        },
+        {
+            "text": "PRODUCT-SPECIFIC RULES",
+            "font_size": np.float64(10.331999999999994),
+            "is_bold": False,
+            "is_italic": False,
+            "top_left": 138.9559999999999,
+            "text_direction:": TextDirection.LEFT_TO_RIGHT,
+            "font": "/Times New Roman",
+            "reference": "#/texts/1",
+        },
+        {
+            "text": "Interpretative Notes",
+            "font_size": np.float64(10.093000000000075),
+            "is_bold": False,
+            "is_italic": False,
+            "top_left": 180.54899999999998,
+            "text_direction:": TextDirection.LEFT_TO_RIGHT,
+            "font": "/Times New Roman,Bold",
+            "reference": "#/texts/2",
+        },
+        {
+            "text": "25-97 EFTA-Central America",
+            "font_size": np.float64(10.092999999999961),
+            "is_bold": False,
+            "is_italic": False,
+            "top_left": 83.92899999999997,
+            "text_direction:": TextDirection.LEFT_TO_RIGHT,
+            "font": "/Times New Roman,Bold",
+            "reference": "#/texts/33",
+        },
+    ]
+    builder = DocumentHierarchyBuilder(headings)
+    hh = builder.infer()
+
+    ref_output = """  APPENDIX 1 TO ANNEX I
+  PRODUCT-SPECIFIC RULES
+    Interpretative Notes
+    25-97 EFTA-Central America
+"""
+    assert str(hh) == ref_output

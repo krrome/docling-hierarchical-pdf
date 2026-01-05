@@ -481,9 +481,9 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "docling", specifier = ">=2.53.0" },
-    { name = "numpy", specifier = ">=2.0.2" },
+    { name = "numpy", specifier = ">=1.19.5" },
     { name = "pymupdf", specifier = ">=1.26.4" },
-    { name = "scikit-learn", specifier = ">=1.6.1" },
+    { name = "scikit-learn", specifier = ">=1.6.0" },
 ]
 
 [package.metadata.requires-dev]

@@ -21,7 +21,7 @@ def compare(res_text, fn):
 
 
 def test_result_postprocessor_textpdf_no_bookmarks():
-    source = sample_path / "sample_document_no_bookmarks.pdf"  # document per local path or URL
+    source = sample_path / "sample_document_hierarchical_no_bookmarks.pdf"  # document per local path or URL
     converter = DocumentConverter()
     result = converter.convert(source)
     ResultPostprocessor(result).process()
@@ -47,7 +47,7 @@ def test_result_postprocessor_textpdf_no_bookmarks():
 
 
 def test_result_postprocessor_textpdf():
-    source = sample_path / "sample_document.pdf"  # document per local path or URL
+    source = sample_path / "sample_document_hierarchical.pdf"  # document per local path or URL
     converter = DocumentConverter()
     result = converter.convert(source)
     ResultPostprocessor(result).process()
@@ -76,7 +76,7 @@ def test_result_postprocessor_textpdf():
 
 
 def test_result_postprocessor_textpdf_stream():
-    source_path = sample_path / "sample_document.pdf"  # document per local path or URL
+    source_path = sample_path / "sample_document_hierarchical.pdf"  # document per local path or URL
     with source_path.open("rb") as fh:
         source = DocumentStream(name=source_path.name, stream=BytesIO(fh.read()))
     converter = DocumentConverter()
@@ -120,7 +120,7 @@ def test_result_postprocessor_textpdf_stream():
 
 
 def test_result_postprocessor_textpdf_string():
-    source_path = sample_path / "sample_document.pdf"  # document per local path or URL
+    source_path = sample_path / "sample_document_hierarchical.pdf"  # document per local path or URL
     source = str(source_path)
     converter = DocumentConverter()
     result = converter.convert(source)

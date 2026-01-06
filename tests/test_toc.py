@@ -1928,7 +1928,7 @@ sample_9 = [
 
 
 def compare(res_text, i):
-    p = results_path / f"sample_{i}.txt"
+    p = results_path / f"hierarch_header_sample_{i}.txt"
     if p.exists():
         assert res_text == p.read_text()
     else:

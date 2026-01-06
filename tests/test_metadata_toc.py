@@ -22,7 +22,7 @@ def test_convert():
   3. Conclusion
 """
 
-    source = sample_path / "sample_document.pdf"  # document per local path or URL
+    source = sample_path / "sample_document_hierarchical.pdf"  # document per local path or URL
     converter = DocumentConverter()
     result = converter.convert(source)
     hbm = HierarchyBuilderMetadata(result)

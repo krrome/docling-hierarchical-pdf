@@ -19,9 +19,9 @@ classifiers = [
 ]
 dependencies = [
     "docling>=2.53.0",
-    "numpy>=2.0.2",
+    "numpy>=1.19.5",
     "pymupdf>=1.26.4",
-    "scikit-learn>=1.6.1",
+    "scikit-learn>=1.6.0",
 ]
 
 [project.urls]

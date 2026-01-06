@@ -132,7 +132,8 @@ class ResultPostprocessor:
         header_correction = False
         if len(hbm.toc) > 0:
             root = hbm.infer()
-            header_correction = True
+            if root.children:
+                header_correction = True
         else:
             headings = self.get_headers()
             root = create_toc(headings)

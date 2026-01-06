@@ -20,6 +20,17 @@ def compare(res_text, fn):
         p.write_text(res_text)
 
 
+@pytest.mark.skip(reason="runs too long for circleci.")
+def test_nfl():
+    source = sample_path / "2025-nfl-rulebook-final.pdf"  # document per local path or URL
+    converter = DocumentConverter()
+    result = converter.convert(source)
+    ResultPostprocessor(result).process()
+
+    headers = ResultPostprocessor(result)._get_headers_document()
+    assert len(headers) > 0
+
+
 def test_result_postprocessor_textpdf_no_bookmarks():
     source = sample_path / "sample_document_hierarchical_no_bookmarks.pdf"  # document per local path or URL
     converter = DocumentConverter()

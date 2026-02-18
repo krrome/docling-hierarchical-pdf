@@ -1,4 +1,3 @@
-from collections import Counter
 from enum import Enum
 from typing import Any, Optional, Union
 
@@ -323,17 +322,42 @@ class DocumentHierarchyBuilder:
 
 
 def cleanup_non_headings(headings: list[dict]) -> list[dict]:
-    counter = Counter([el["text"] for el in headings])
-    duplicate_headings = [k for k, count in counter.items() if count > 1]
-    # if the location is always the same then it's either a header or a footer
-    location = [el for el in headings if el["text"] in duplicate_headings]
-    # otherwise they might still be sub-headings...
+    """Remove incorrectly identified headings.
+    Docling sometimes identifies bold list elements and
+    headers or footers as headings. Attempt to remove those.
+    If header elements don't have a reference then they will be
+    kept and not be checked.
 
-    main_text_elements = [el for el in headings if el["text"].startswith("•") or el["text"].startswith("o")]
+    Args:
+        headings (list[dict]): List of header dict elements.
 
-    ignore_texts = [el["text"] for el in location + main_text_elements]
-    headings = [el for el in headings if el["text"] not in ignore_texts]
+    Returns:
+        list[dict]: Filtered list of header dict elements.
+    """
+    ignore_refs = set()
+    headings_by_text: dict[str, list[dict]] = {}
 
+    bullet_prefixes = ("•", "◦", "○", "o ", "- ", "– ")  # noqa: RUF001
+    for h in headings:
+        if not (ref := h.get("reference")):
+            continue
+        if h["text"].strip().startswith(bullet_prefixes):
+            ignore_refs.add(ref)
+        else:
+            headings_by_text.setdefault(h["text"], []).append(h)
+
+    tolerance = 5.0
+    for occurences in headings_by_text.values():
+        if len(occurences) == 1:
+            continue
+
+        positions = [h.get("top_left", 0) for h in occurences]
+        mean_font_size = sum([h.get("font_size", 0) for h in occurences]) / len(occurences)
+        if np.std(positions) < max(tolerance, mean_font_size):  # all headings appear at same vertical position
+            for h in occurences:
+                ignore_refs.add(h["reference"])
+
+    headings = [h for h in headings if (ref := h.get("reference")) is None or (ref not in ignore_refs)]
     return headings
 
 

@@ -1935,8 +1935,14 @@ def compare(res_text, i):
         p.write_text(res_text)
 
 
+def add_reference_to_sample(sample):
+    for i, el in enumerate(sample):
+        el["reference"] = f"#{i}"
+    return sample
+
+
 def test_sample_0():
-    headings = cleanup_non_headings(sample_0)
+    headings = cleanup_non_headings(add_reference_to_sample(sample_0))
 
     builder = DocumentHierarchyBuilder(headings)
 
@@ -1945,7 +1951,7 @@ def test_sample_0():
 
 
 def test_sample_1():
-    headings = cleanup_non_headings(sample_1)
+    headings = cleanup_non_headings(add_reference_to_sample(sample_1))
 
     builder = DocumentHierarchyBuilder(headings)
 
@@ -1954,43 +1960,43 @@ def test_sample_1():
 
 
 def test_sample_2():
-    root_node = create_toc(sample_2)
+    root_node = create_toc(add_reference_to_sample(sample_2))
     compare(str(root_node), 2)
 
 
 def test_sample_3():
-    root_node = create_toc(sample_3)
+    root_node = create_toc(add_reference_to_sample(sample_3))
     compare(str(root_node), 3)
 
 
 def test_sample_4():
-    root_node = create_toc(sample_4)
+    root_node = create_toc(add_reference_to_sample(sample_4))
     compare(str(root_node), 4)
 
 
 @pytest.mark.skip(reason="inferring of titles currently ignored. Super edge case.")
 def test_sample_5():
-    root_node = create_toc(sample_5)
+    root_node = create_toc(add_reference_to_sample(sample_5))
     compare(str(root_node), 5)
 
 
 def test_sample_6():
-    root_node = create_toc(sample_6)
+    root_node = create_toc(add_reference_to_sample(sample_6))
     compare(str(root_node), 6)
 
 
 def test_sample_7():
-    root_node = create_toc(sample_7)
+    root_node = create_toc(add_reference_to_sample(sample_7))
     compare(str(root_node), 7)
 
 
 def test_sample_8():
-    root_node = create_toc(sample_8)
+    root_node = create_toc(add_reference_to_sample(sample_8))
     compare(str(root_node), 8)
 
 
 def test_sample_9():
-    root_node = create_toc(sample_9)
+    root_node = create_toc(add_reference_to_sample(sample_9))
     compare(str(root_node), 9)
 
 
@@ -2001,7 +2007,7 @@ def test_skip_empty_header_list():
 
 
 def test_flatten_hierarchy_tree():
-    root_node = create_toc(sample_0)
+    root_node = create_toc(add_reference_to_sample(sample_0))
     current_non_num_level = 1
     for h, level in flatten_hierarchy_tree(root_node):
         if h.level_numerical:
@@ -2054,7 +2060,7 @@ def test_catch_illformatted_arabic_numbering():
             "reference": "#/texts/33",
         },
     ]
-    builder = DocumentHierarchyBuilder(headings)
+    builder = DocumentHierarchyBuilder(add_reference_to_sample(headings))
     hh = builder.infer()
 
     ref_output = """  APPENDIX 1 TO ANNEX I

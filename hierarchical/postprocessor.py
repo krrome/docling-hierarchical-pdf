@@ -71,26 +71,22 @@ class ResultPostprocessor:
 
         return len(levels) > 1
 
+    @staticmethod
+    def _is_list_item_header(item: ListItem) -> bool:
+        text = (item.orig if item.orig else item.text).strip()
+        return bool(
+            infer_header_level_numerical(text)
+            or infer_header_level_letter(text)
+            or infer_header_level_roman(text)
+        )
+
     def _get_headers_result(self) -> list[dict]:
         items: list[dict] = []
         for item, _ in self.result.document.iterate_items():
-            is_header = False
-            if isinstance(item, SectionHeaderItem):
-                is_header = True
-            elif isinstance(item, ListItem):
-                # Include ListItems that look like numbered section headers
-                text_to_check = item.orig if hasattr(item, 'orig') and item.orig else item.text
-                text_to_check = text_to_check.strip()
-                numbering = (
-                    infer_header_level_numerical(text_to_check)
-                    or infer_header_level_letter(text_to_check)
-                    or infer_header_level_roman(text_to_check)
-                )
-                if numbering:
-                    is_header = True
-            
-            if not is_header:
-                continue
+            if not isinstance(item, SectionHeaderItem):
+                if not isinstance(item, ListItem) or not self._is_list_item_header(item):
+                    continue
+            # item is now guaranteed to be a relevant header
                 
             prov = item.prov[0]
             
@@ -141,38 +137,27 @@ class ResultPostprocessor:
     def _get_headers_document(self) -> list[dict]:
         items = []
         for item, _ in self.result.document.iterate_items():
-            is_header = False
-            if isinstance(item, SectionHeaderItem):
-                is_header = True
-            elif isinstance(item, ListItem):
-                # Include ListItems that look like numbered section headers
-                text_to_check = item.orig if hasattr(item, 'orig') and item.orig else item.text
-                text_to_check = text_to_check.strip()
-                numbering = (
-                    infer_header_level_numerical(text_to_check)
-                    or infer_header_level_letter(text_to_check)
-                    or infer_header_level_roman(text_to_check)
-                )
-                if numbering:
-                    is_header = True
+            if not isinstance(item, SectionHeaderItem):
+                if not isinstance(item, ListItem) or not self._is_list_item_header(item):
+                    continue
+            # item is now guaranteed to be a relevant header
             
-            if is_header:
-                prov = item.prov[0]
-                # For ListItems, use orig field which contains full text with marker
-                if isinstance(item, ListItem) and hasattr(item, 'orig') and item.orig:
-                    text_to_use = item.orig
-                else:
-                    text_to_use = item.text
-                items.append({
-                    "text": " ".join(text_to_use.split("\n")),
-                    "font_size": prov.bbox.height,
-                    "is_bold": False,
-                    "is_italic": False,
-                    "top_left": prov.bbox.t,
-                    "text_direction:": None,
-                    "font": "",
-                    "reference": item.self_ref,
-                })
+            prov = item.prov[0]
+            # For ListItems, use orig field which contains full text with marker
+            if isinstance(item, ListItem) and hasattr(item, 'orig') and item.orig:
+                text_to_use = item.orig
+            else:
+                text_to_use = item.text
+            items.append({
+                "text": " ".join(text_to_use.split("\n")),
+                "font_size": prov.bbox.height,
+                "is_bold": False,
+                "is_italic": False,
+                "top_left": prov.bbox.t,
+                "text_direction:": None,
+                "font": "",
+                "reference": item.self_ref,
+            })
         return items
 
     def get_headers(self) -> list[dict]:

@@ -83,16 +83,19 @@ class ResultPostprocessor:
     def _get_headers_result(self) -> list[dict]:
         items: list[dict] = []
         for item, _ in self.result.document.iterate_items():
-            if not isinstance(item, SectionHeaderItem):
-                if not isinstance(item, ListItem) or not self._is_list_item_header(item):
-                    continue
+            if not isinstance(item, SectionHeaderItem) and (
+                not isinstance(item, ListItem) or not self._is_list_item_header(item)
+            ):
+                continue
             # item is now guaranteed to be a relevant header
-                
+
             prov = item.prov[0]
-            
+
             # For ListItems, we can't match clusters, so add them directly
             if isinstance(item, ListItem):
-                text_to_use = item.orig if hasattr(item, 'orig') and item.orig else item.text
+                text_to_use = (
+                    item.orig if hasattr(item, "orig") and item.orig else item.text
+                )
                 items.append({
                     "text": " ".join(text_to_use.split("\n")),
                     "font_size": prov.bbox.height,
@@ -104,7 +107,7 @@ class ResultPostprocessor:
                     "reference": item.self_ref,
                 })
                 continue
-            
+
             page = self.result.pages[prov.page_no - 1]
             if page.predictions.layout is None:
                 return items
@@ -137,17 +140,19 @@ class ResultPostprocessor:
     def _get_headers_document(self) -> list[dict]:
         items = []
         for item, _ in self.result.document.iterate_items():
-            if not isinstance(item, SectionHeaderItem):
-                if not isinstance(item, ListItem) or not self._is_list_item_header(item):
-                    continue
+            if not isinstance(item, SectionHeaderItem) and (
+                not isinstance(item, ListItem) or not self._is_list_item_header(item)
+            ):
+                continue
             # item is now guaranteed to be a relevant header
-            
+
             prov = item.prov[0]
             # For ListItems, use orig field which contains full text with marker
-            if isinstance(item, ListItem) and hasattr(item, 'orig') and item.orig:
-                text_to_use = item.orig
-            else:
-                text_to_use = item.text
+            text_to_use = (
+                item.orig
+                if isinstance(item, ListItem) and hasattr(item, "orig") and item.orig
+                else item.text
+            )
             items.append({
                 "text": " ".join(text_to_use.split("\n")),
                 "font_size": prov.bbox.height,

@@ -18,6 +18,7 @@ from docling_core.types.doc.document import (
 
 from hierarchical.hierarchy_builder import create_toc
 from hierarchical.hierarchy_builder_metadata import HierarchyBuilderMetadata
+from hierarchical.parsers import infer_header_level_letter, infer_header_level_numerical, infer_header_level_roman
 from hierarchical.types.hierarchical_header import HierarchicalHeader
 
 
@@ -70,12 +71,39 @@ class ResultPostprocessor:
 
         return len(levels) > 1
 
+    @staticmethod
+    def _is_list_item_header(item: ListItem) -> bool:
+        text = (item.orig if item.orig else item.text).strip()
+        return bool(
+            infer_header_level_numerical(text) or infer_header_level_letter(text) or infer_header_level_roman(text)
+        )
+
     def _get_headers_result(self) -> list[dict]:
         items: list[dict] = []
         for item, _ in self.result.document.iterate_items():
-            if not isinstance(item, SectionHeaderItem):
+            if not isinstance(item, SectionHeaderItem) and (
+                not isinstance(item, ListItem) or not self._is_list_item_header(item)
+            ):
                 continue
+            # item is now guaranteed to be a relevant header
+
             prov = item.prov[0]
+
+            # For ListItems, we can't match clusters, so add them directly
+            if isinstance(item, ListItem):
+                text_to_use = item.orig if hasattr(item, "orig") and item.orig else item.text
+                items.append({
+                    "text": " ".join(text_to_use.split("\n")),
+                    "font_size": prov.bbox.height,
+                    "is_bold": False,
+                    "is_italic": False,
+                    "top_left": prov.bbox.t,
+                    "text_direction:": None,
+                    "font": "",
+                    "reference": item.self_ref,
+                })
+                continue
+
             page = self.result.pages[prov.page_no - 1]
             if page.predictions.layout is None:
                 return items
@@ -108,18 +136,25 @@ class ResultPostprocessor:
     def _get_headers_document(self) -> list[dict]:
         items = []
         for item, _ in self.result.document.iterate_items():
-            if isinstance(item, SectionHeaderItem):
-                prov = item.prov[0]
-                items.append({
-                    "text": " ".join(item.text.split("\n")),
-                    "font_size": prov.bbox.height,
-                    "is_bold": False,
-                    "is_italic": False,
-                    "top_left": prov.bbox.t,
-                    "text_direction:": None,
-                    "font": "",
-                    "reference": item.self_ref,
-                })
+            if not isinstance(item, SectionHeaderItem) and (
+                not isinstance(item, ListItem) or not self._is_list_item_header(item)
+            ):
+                continue
+            # item is now guaranteed to be a relevant header
+
+            prov = item.prov[0]
+            # For ListItems, use orig field which contains full text with marker
+            text_to_use = item.orig if isinstance(item, ListItem) and hasattr(item, "orig") and item.orig else item.text
+            items.append({
+                "text": " ".join(text_to_use.split("\n")),
+                "font_size": prov.bbox.height,
+                "is_bold": False,
+                "is_italic": False,
+                "top_left": prov.bbox.t,
+                "text_direction:": None,
+                "font": "",
+                "reference": item.self_ref,
+            })
         return items
 
     def get_headers(self) -> list[dict]:
@@ -164,7 +199,7 @@ class ResultPostprocessor:
                     item = text_item
                 if item.self_ref in by_ref:
                     if not isinstance(item, SectionHeaderItem):
-                        if header_correction and isinstance(item, (TextItem, ListItem)):
+                        if isinstance(item, (TextItem, ListItem)):
                             header_item = SectionHeaderItem(**{
                                 k: v
                                 for k, v in item.model_dump().items()
@@ -192,7 +227,7 @@ class ResultPostprocessor:
                     new_parent_ref = RefItem(cref=current_header.doc_ref)
                 if new_parent_ref is not None and item.parent is None:
                     raise ItemNotRegisteredAsChildException(item)
-                if new_parent_ref is not None and item.parent is not None and item.parent.cref == doc.body.self_ref:
+                if new_parent_ref is not None and item.parent is not None:
                     old_parent = item.parent.resolve(doc)
                     new_parent = new_parent_ref.resolve(doc)
                     item_i = [i for i, c in enumerate(old_parent.children) if c.cref == item.self_ref]
@@ -202,5 +237,6 @@ class ResultPostprocessor:
                         new_parent.children.append(child_ref)
                     else:
                         raise ItemNotRegisteredAsChildException(item)
+                    processed.append(item.self_ref)
                     break
                 processed.append(item.self_ref)

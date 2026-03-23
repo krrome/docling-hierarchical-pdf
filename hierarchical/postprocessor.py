@@ -75,9 +75,7 @@ class ResultPostprocessor:
     def _is_list_item_header(item: ListItem) -> bool:
         text = (item.orig if item.orig else item.text).strip()
         return bool(
-            infer_header_level_numerical(text)
-            or infer_header_level_letter(text)
-            or infer_header_level_roman(text)
+            infer_header_level_numerical(text) or infer_header_level_letter(text) or infer_header_level_roman(text)
         )
 
     def _get_headers_result(self) -> list[dict]:
@@ -93,9 +91,7 @@ class ResultPostprocessor:
 
             # For ListItems, we can't match clusters, so add them directly
             if isinstance(item, ListItem):
-                text_to_use = (
-                    item.orig if hasattr(item, "orig") and item.orig else item.text
-                )
+                text_to_use = item.orig if hasattr(item, "orig") and item.orig else item.text
                 items.append({
                     "text": " ".join(text_to_use.split("\n")),
                     "font_size": prov.bbox.height,
@@ -148,11 +144,7 @@ class ResultPostprocessor:
 
             prov = item.prov[0]
             # For ListItems, use orig field which contains full text with marker
-            text_to_use = (
-                item.orig
-                if isinstance(item, ListItem) and hasattr(item, "orig") and item.orig
-                else item.text
-            )
+            text_to_use = item.orig if isinstance(item, ListItem) and hasattr(item, "orig") and item.orig else item.text
             items.append({
                 "text": " ".join(text_to_use.split("\n")),
                 "font_size": prov.bbox.height,

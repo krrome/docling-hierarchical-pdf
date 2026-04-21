@@ -90,6 +90,7 @@ class HierarchyBuilderMetadata:
         try:
             with self._get_source_kwargs() as kwargs:
                 doc = FitzDocument(**kwargs)
+                page_count = len(doc)
                 toc = doc.get_toc(  # type: ignore[attr-defined]
                     simple=False
                 )  # gives a list of lists [<hierarchy level>, <Header name>, <pdf-page number>, <dict of additional information including position of the bookmark>]

@@ -114,7 +114,10 @@ class HierarchyBuilderMetadata:
                         add_info["coords"] = this_bbox
                     # sometimes the bookmark still points to the previous page, but the header is at the top of the current page
                     # future todo - instead of this try to use the offset of the bookmark pointer!
-                    for page_here in range(page, min(page + 1, page_count) + 1):
+                    pages = [page]
+                    if page + 1 <= page_count:
+                        pages += [page + 1]
+                    for page_here in pages:
                         if "coords" not in add_info:
                             title_ref = re.sub(r"[^A-Za-z0-9]", "", title)
                             actual_title = ""

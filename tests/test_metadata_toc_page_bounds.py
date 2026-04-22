@@ -28,7 +28,7 @@ def test_extract_toc_handles_last_page_without_overflow(monkeypatch):
 
         def __getitem__(self, index):
             if index < 0 or index >= len(self.pages):
-                raise AssertionError(f"Unexpected page access: {index}")
+                raise AssertionError(f"Unexpected page access: {index}")  # noqa: TRY003
             return self.pages[index]
 
         @staticmethod

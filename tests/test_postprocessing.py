@@ -5,7 +5,7 @@ import pytest
 from docling.datamodel.base_models import DocumentStream
 from docling.document_converter import DocumentConverter
 
-from hierarchical.hierarchy_builder_metadata import PDFFileNotFoundException, PDFFileStreamClosed
+from hierarchical.hierarchy_builder_metadata import InvalidSourcePath, PDFFileStreamClosed
 from hierarchical.postprocessor import ResultPostprocessor
 
 results_path = Path(__file__).parent / "results"
@@ -86,6 +86,15 @@ def test_result_postprocessor_textpdf():
         assert item.text in allowed_headers
 
 
+def test_result_postprocessor_textpdf_http():
+    source_path = "https://raw.githubusercontent.com/krrome/docling-hierarchical-pdf/refs/heads/main/tests/samples/sample_document_hierarchical_no_bookmarks.pdf"
+    converter = DocumentConverter()
+    result = converter.convert(source_path)
+    ResultPostprocessor(result, source=source_path, raise_on_error=True).process()
+
+    compare(result.document.export_to_markdown(), "sample_document.md")
+
+
 def test_result_postprocessor_textpdf_stream():
     source_path = sample_path / "sample_document_hierarchical.pdf"  # document per local path or URL
     with source_path.open("rb") as fh:
@@ -95,7 +104,7 @@ def test_result_postprocessor_textpdf_stream():
     try:
         ResultPostprocessor(result, raise_on_error=True).process()
         raise Exception("FAIL NO STREAM!")  # noqa: TRY002 TRY003
-    except PDFFileNotFoundException:
+    except InvalidSourcePath:
         pass
     try:
         ResultPostprocessor(result, source=source, raise_on_error=True).process()

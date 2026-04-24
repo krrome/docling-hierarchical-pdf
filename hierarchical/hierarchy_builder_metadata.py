@@ -1,4 +1,5 @@
 import re
+import urllib.request
 from collections.abc import Generator
 from contextlib import contextmanager
 from functools import cached_property
@@ -6,6 +7,7 @@ from io import BytesIO
 from logging import Logger
 from pathlib import Path, PurePath
 from typing import Optional, Union
+from urllib.parse import urlparse
 
 from docling.datamodel.base_models import DocumentStream
 from docling.datamodel.document import ConversionResult
@@ -27,14 +29,16 @@ class ImplausibleHeadingStructureException(Exception):
         super().__init__("Hierarchy demands equal level heading, but no common parent was found!")
 
 
-class PDFFileNotFoundException(Exception):
-    def __init__(self, path: PurePath) -> None:
-        super().__init__(f"PDF file {path} does not exist!")
-
-
 class PDFFileStreamClosed(Exception):
     def __init__(self) -> None:
         super().__init__("The (byte)stream of the PDF was closed. Can't process this input for ToC extraction.")
+
+
+class InvalidSourcePath(ValueError):
+    def __init__(self, url: Union[PurePath, str]) -> None:
+        super().__init__(
+            f"Path or String-sources must point to a local path that exists or to HTTP or HTTPS URLs. Got: {url}"
+        )
 
 
 class InvalidSourceTypeException(Exception):
@@ -56,16 +60,24 @@ class HierarchyBuilderMetadata:
     def toc(self) -> list[tuple]:
         return self._extract_toc()
 
+    @staticmethod
+    def _validate_http_source(source: str) -> bool:
+        parsed = urlparse(source)
+        return parsed.scheme in {"http", "https"}
+
     @contextmanager
     def _get_source_kwargs(self) -> Generator[dict]:
         source = self.source
         if source is None:
             source = self.conv_res.input.file
-        if isinstance(source, str):
-            source = Path(source)
-        if isinstance(source, PurePath):
+        if isinstance(source, (str, PurePath)):
             if not Path(source).exists():
-                raise PDFFileNotFoundException(source)
+                # maybe it's a URL:
+                if not isinstance(source, str) or not self._validate_http_source(source):
+                    raise InvalidSourcePath(source)
+
+                stream = BytesIO(urllib.request.urlopen(source).read())  # noqa: S310 # Ruff doesn't understand that I am checking this already
+                yield {"filetype": str(source), "stream": stream}
             else:
                 yield {"filename": str(source)}
         elif isinstance(source, DocumentStream):
@@ -155,7 +167,7 @@ class HierarchyBuilderMetadata:
                     if "coords" not in add_info:
                         logger.warning(f"WARNING: Could not find title '{title}', which was mentioned in TOC. ")
                     toc_output.append((level, title, page, add_info))
-        except (InvalidSourceTypeException, PDFFileStreamClosed, PDFFileNotFoundException) as e:
+        except (InvalidSourceTypeException, PDFFileStreamClosed, InvalidSourcePath) as e:
             if self.raise_on_error:
                 raise
             else:

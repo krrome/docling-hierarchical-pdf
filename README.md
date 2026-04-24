@@ -124,9 +124,9 @@ result.document.export_to_markdown()
 
 ## FAQ
 
-### Working with DocumentStream sources / PDFFileNotFoundException:
+### Working with DocumentStream sources / InvalidSourcePath:
 
-If you run into the `PDFFileNotFoundException` then your `source` attribute to `DocumentConverter().convert(source=source)` has either been of type `str` or of type `DocumentStream` so there is the Docling conversion result unfortunately does *not* hold a valid reference to the source file anymore. Hence the Postprocessor needs your help - if `source` was a string then you can add the `source=source` when instantiating `ResultPostprocessor` - full example:
+If you run into the `InvalidSourcePath` then your `source` attribute to `DocumentConverter().convert(source=source)` has either been of type `str` or of type `DocumentStream` so there is the Docling conversion result unfortunately does *not* hold a valid reference to the source file anymore. Hence the Postprocessor needs your help - if `source` was a string then you can add the `source=source` when instantiating `ResultPostprocessor` - full example:
 
 ```python
 from docling.document_converter import DocumentConverter

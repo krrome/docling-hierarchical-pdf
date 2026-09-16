@@ -181,7 +181,7 @@ class ResultPostprocessor:
         current_header = root
         new_parent_ref = None
 
-        processed: set[str] = []
+        processed: set[str] = set()
         last_len_processed = -1
         while last_len_processed < len(processed):
             last_len_processed = len(processed)

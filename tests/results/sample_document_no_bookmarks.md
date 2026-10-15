@@ -1,10 +1,15 @@
 ## Some kind of text document
 
 ## 1. Introduction
+
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis consequat tincidunt tempor.
+
 ### 1.1 Background
+
 Praesent venenatis leo vel nibh tincidunt, nec iaculis est dictum. Integer ac purus at mi volutpat feugiat.
+
 ### 1.2 Purpose
+
 Nunc rhoncus, risus ut pretium hendrerit, ipsum nulla lobortis augue, nec vestibulum magna turpis sit amet erat.
 
 ## 2. Main Content
